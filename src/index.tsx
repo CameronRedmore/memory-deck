@@ -56,13 +56,12 @@ const FieldWithSeparator = joinClassNames(gamepadDialogClasses.Field, gamepadDia
 // MATCH_DECREASED_BY = 12
 
 const MatchTypes = [
-  // { value: 0, label: "Any" },
   { value: 1, label: "==" },
   { value: 2, label: "!=" },
   { value: 3, label: ">" },
   { value: 4, label: "<" },
-  // { value: 5, label: "Range" },
-  // { value: 6, label: "Update" },
+  // { value: 5, label: "Range" }, -- Not Yet Implemented
+  // { value: 6, label: "Update" }, -- Not Supported
   { value: 7, label: "Not Changed" },
   { value: 8, label: "Changed" },
 
@@ -71,6 +70,9 @@ const MatchTypes = [
 
   { value: 11, label: "Increased By" },
   { value: 12, label: "Decreased By" },
+
+  
+  { value: 0, label: "Any" }, //Not overly useful, so it's last
 
 ]
 

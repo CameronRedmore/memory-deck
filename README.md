@@ -31,18 +31,23 @@ When searching for a value, you can use the following operators:
 
 | Operator     | Description                                                                       |
 | ------------ | --------------------------------------------------------------------------------- |
-| ==           | The value in memory*exactly matches* the search value.                         |
-| !=           | The value in memory*does not match* the search value.                          |
-| &gt;         | The value in memory is greater than the search value.                             |
-| &lt;         | The value in memory is less than the search value.                                |
-| Not Changed  | The value in memory has**not** changed since the last search.               |
-| Changed      | The value in memory*has* changed since the last search.                        |
-| Increased    | The value in memory has*increased* since the last search.                      |
-| Decreased    | The value in memory has*decreased* since the last search.                      |
-| Increased By | The value in memory has*increased* by the search value since the last search.  |
-| Decreased By | The value in memory has*decreased* by the search value since the last search.  |
+| ==           | The value in memory *exactly matches* the search value.                         |
+| !=           | The value in memory *does not match* the search value.                          |
+| &gt;         | The value in memory is *greater* than the search value.                             |
+| &lt;         | The value in memory is *less* than the search value.                                |
+| Not Changed  | The value in memory has *not* changed since the last search.               |
+| Changed      | The value in memory *has* changed since the last search.                        |
+| Increased    | The value in memory has *increased* since the last search.                      |
+| Decreased    | The value in memory has *decreased* since the last search.                      |
+| Increased By | The value in memory has *increased* by the search value since the last search.  |
+| Decreased By | The value in memory has *decreased* by the search value since the last search.  |
+| Any          | Search for *all* values in memory. Only really useful for an "Unknown Initial Value"                                              |
 
-Your first search should probably be a `==` search, as this will find all values that match the search value.
+Your first search should probably be a `==` search, as this will find all values that match the search value. But you may potentially want to use the `Any` search if you don't know what the initial value is.
+
+The `!=` operator could also technically be used here. But it's far more likely that you'll want to use `Any`.
+
+All other searches make use of the previous search results, so you will need to perform a search before you can use them.
 
 #### Running the Search
 
@@ -51,6 +56,8 @@ Once you have entered your search value and operator. Press the `Search` button 
 This will ask the backend to run the scan you've selected.
 
 Once the process is complete, you will be able to see the number of matches found at the bottom of the QAM.
+
+Once values have been found, do something in-game that will change the value you're searching for. Then run another search. If you know the new value, you can use the `==` operator again. If you don't know the new value, you can use the other operators depending on the information you *do* know about the value.
 
 Keep repeating searches until there are less than *10* matches left.
 
