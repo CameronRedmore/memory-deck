@@ -1,7 +1,7 @@
 // Basic React component that renders a numeric input field
 
 import React, { useEffect, useState } from "react";
-import { PanelSection, PanelSectionRow, gamepadDialogClasses, joinClassNames, DialogButton, Focusable } from "decky-frontend-lib";
+import { PanelSectionRow, gamepadDialogClasses, joinClassNames, DialogButton, Focusable } from "decky-frontend-lib";
 
 import { playSound } from "../util";
 
