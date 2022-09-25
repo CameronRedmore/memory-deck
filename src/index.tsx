@@ -168,6 +168,8 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
       setResults(result.result as Result[]);
       console.log(results);
     }
+
+    setLoading(false)
   }
 
   const setValue = async (address: string) => {
@@ -360,29 +362,6 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
 
       {/* If there is no selected process */}
       {!selectedProcess && ProcessSelection}
-
-      <style>
-        {`
-          .NumpadButton {
-            padding: 10px 24px;
-            background: #23262e;
-            color: #dcdedf;
-            border: 0;
-            border-radius: 2px;
-            font-size: 16px;
-          }
-          .NumpadButton:hover {
-            background: #fff;
-            color: #23262e;
-            outline: none;
-          }
-          .NumpadButton:active {
-            background: #fff;
-            color: #23262e;
-            outline: none;
-          }
-        `}
-      </style>
     </React.Fragment>
   );
 };

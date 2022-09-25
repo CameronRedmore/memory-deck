@@ -104,7 +104,7 @@ export const NumpadInput = (props: NumpadInputProps): JSX.Element => {
           <style>{`
             .NumpadGrid button {
               min-width: 0 !important; 
-              }
+            }
           `}</style>
 
           {/* 3x4 Digit Grid */}

@@ -84,3 +84,10 @@ This will reset the scan and empty out all known values. This allows you to then
 ## Installation
 Install [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader) using their instructions.
 You should then be able to find Memory Deck in the Decky store!
+
+# License
+This project is licensed under the GPL-3.0 License - see the [LICENSE](LICENSE) file for details.
+
+This project uses `libscanmem` and includes source code for `scanmem` and `libscanmem`, licensed under the GPL-3.0 License and the LGPL-3.0 License respectively.
+
+A copy of the licenses for these projects can be found under the `backend/scanmem` folder. And can be found in the `bin` folder of the plugin once compiled.
