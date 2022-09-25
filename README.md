@@ -6,6 +6,15 @@ This plugin allows you to scan for, and edit values in memory. Akin to something
 
 ![Memory Deck](image/README/1664125159778.png)
 
+## Warning
+This plugin directly manipulates memory. This can cause crashes, and other issues. Use at your own risk.
+
+## Code Warning
+This plugin is a mess.
+I don't like C, I don't like Python and I don't like React.
+
+I openly welcome any PRs to clean up the code, refactor, and just make this... not so garbage!
+
 ## How to Use
 
 ### Selecting a Process
