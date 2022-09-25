@@ -1,94 +1,70 @@
-# React-Frontend Plugin Template [![Chat](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/ZU74G2NJzk)
+# Memory Deck
 
+A scanmem wrapper in a [decky-loader](https://github.com/SteamDeckHomebrew/decky-loader) plugin.
 
-Reference example for using [decky-frontend-lib](https://github.com/SteamDeckHomebrew/decky-frontend-lib) in a [decky-loader](https://github.com/SteamDeckHomebrew/deckly-loader) plugin.
+This plugin allows you to scan for, and edit values in memory. Akin to something like [Cheat Engine](https://cheatengine.org).
 
-If you want to get in contact with the developers, we can be found in the
-**[SteamDeckHomebrew Discord](https://discord.gg/ZU74G2NJzk)**.
+![Memory Deck](image/README/1664125159778.png)
 
-## Developers
+## How to Use
 
-### Dependencies
+### Selecting a Process
 
-This template relies on the user having `pnpm` installed on their system.  
-This can be downloaded from `npm` itself which is recommended. 
+When first opening Memory Deck, you will need to select a process. The plugin will automatically load a list of processes for you when opened.
 
-#### Linux
+If you need to reload the process list for any reason, simply press the `Reload Process List` button.
 
-```bash
-sudo npm i -g pnpm
-```
+You will need to do this after closing / opening processes after Memory Deck has been opened.
 
-### Making your own plugin
+#### Changing Process
 
-1. You can fork this repo or utilize the "Use this template" button on Github.
-2. In your local fork/own plugin-repository run these commands:
-   1. ``pnpm i``
-   2. ``pnpm run build``
-   - These setup pnpm and build the frontend code for testing.
-3. Consult the [decky-frontend-lib](https://github.com/SteamDeckHomebrew/decky-frontend-lib) repository for ways to accomplish your tasks.
-   - Documentation and examples are still rough, 
-   - While decky-loader primarily targets Steam Deck hardware so keep this in mind when developing your plugin.
-4. If you want an all encompassing demonstration of decky-frontend-lib's capabilites check out [decky-playground](https://github.com/SteamDeckHomebrew/decky-playground). It shows off almost all of decky-frontend-lib's features.
+After a process has been selected, you can change it by pressing the `Choose Another Process` button.
 
-#### Other important information
+### Finding a Value
 
-Everytime you change the frontend code (`index.tsx` etc) you will need to rebuild using the commands from step 2 above or the build task if you're using vscode or a derivative.
+To find a value in memory, a number of searches need to be performed in sequence.
+Each search should ideally change something to narrow the search down further and further, until eventually hopefully reaching just a single value (or at least a small enough list to manually check).
 
-Note: If you are receiving build errors due to an out of date library, you should run this command inside of your repository:
+#### Search Operators
 
-```bash
-pnpm update decky-frontend-lib --latest
-```
+When searching for a value, you can use the following operators:
 
-### Backend support
+| Operator     | Description                                                                       |
+| ------------ | --------------------------------------------------------------------------------- |
+| ==           | The value in memory*exactly matches* the search value.                         |
+| !=           | The value in memory*does not match* the search value.                          |
+| &gt;         | The value in memory is greater than the search value.                             |
+| &lt;         | The value in memory is less than the search value.                                |
+| Not Changed  | The value in memory has**not** changed since the last search.               |
+| Changed      | The value in memory*has* changed since the last search.                        |
+| Increased    | The value in memory has*increased* since the last search.                      |
+| Decreased    | The value in memory has*decreased* since the last search.                      |
+| Increased By | The value in memory has*increased* by the search value since the last search.  |
+| Decreased By | The value in memory has*decreased* by the search value since the last search.  |
 
-If you are developing with a backend for a plugin and would like to submit it to the [decky-plugin-database](https://github.com/SteamDeckHomebrew/decky-plugin-database) you will need to have all backend code located in ``backend/src``, with backend being located in the root of your git repository.
-When building your plugin, the source code will be built and any finished binary or binaries will be output to ``backend/out`` (which is created during CI.)
-If your buildscript, makefile or any other build method does not place the binary files in the ``backend/out`` directory they will not be properly picked up during CI and your plugin will not have the required binaries included for distribution.
+Your first search should probably be a `==` search, as this will find all values that match the search value.
 
-Example:  
-In our makefile used to demonstrate the CI process of building and distributing a plugin backend, note that the makefile explicitly creates the `out` folder (``backend/out``) and then compiles the binary into that folder. Here's the relevant snippet.
+#### Running the Search
 
-```make
-hello:
-	mkdir -p ./out
-	gcc -o ./out/hello ./src/main.c
-```
+Once you have entered your search value and operator. Press the `Search` button to run the search.
 
-The CI does create the `out` folder itself but we recommend creating it yourself if possible during your build process to ensure the build process goes smoothly.
+This will ask the backend to run the scan you've selected.
 
-The out folder is not sent to the final plugin, but is then put into a ``bin`` folder which is found at the root of the plugin's directory.  
-More information on the bin folder can be found below in the distribution section below.
+Once the process is complete, you will be able to see the number of matches found at the bottom of the QAM.
 
-### Distribution
+Keep repeating searches until there are less than *10* matches left.
 
-We recommend following the instructions found in the [decky-plugin-database](https://github.com/SteamDeckHomebrew/decky-plugin-database) on how to get your plugin up on the plugin store. This is the best way to get your plugin in front of users.
-You can also choose to do distribution via a zip file containing the needed files, if that zip file is uploaded to a URL it can then be downloded and installed via decky-loader.
+### Editing Values
+Once there are less than 10 matches, a new section will appear at the bottom of the QAM.
 
-**NOTE: We do not currently have a method to install from a downloaded zip file in "game-mode" due to lack of a usable file-picking dialog.**
+This section will list every match address, with a `Change` button.
 
-Layout of a plugin zip ready for distribution:
-```
-pluginname-v1.0.0.zip (version number is optional but recommended for users sake)
-   |
-   pluginname/ <directory>
-   |  |  |
-   |  |  bin/ <directory> (optional)
-   |  |     |
-   |  |     binary (optional)
-   |  |
-   |  dist/ <directory> [required]
-   |      |
-   |      index.js [required]
-   | 
-   package.json [required]
-   plugin.json [required]
-   main.py {required if you are using the python backend of decky-loader: serverAPI}
-   README.md (optional but recommended)
-   LICENSE(.md) {required in some cases, not in others}
-```
+You can enter a new value with the `New Value` field, and press the `Change` button to change the value at that address.
 
-Note regarding licenses: Including a license is required for the plugin store if your chosen license requires the license to be included alongside usage of source-code/binaries!
+### Resetting a Scan
+If you want to reset the scan, you can press the `Reset Scan` button at the top of the page.
+This will reset the scan and empty out all known values. This allows you to then start another initial scan.
 
-We cannot and will not distribute your plugin on the Plugin Store if it's license requires it's inclusion but you have not included a license to be re-distributed with your plugin in the root of your git repository.
+## Installation
+Install [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader) using their instructions.
+You should then be able to find Memory Deck in the Decky store!

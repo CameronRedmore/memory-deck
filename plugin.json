@@ -4,7 +4,7 @@
   "flags": ["debug", "_root"],
   "publish": {
     "tags": ["cheats", "root", "scanmem", "memory"],
-    "description": "Scanmem wrapper for Decky.",
+    "description": "A simplistic scanmem wrapper for Decky. Enabling scanning for and editing values in memory.",
     "image": "https://opengraph.githubassets.com/1/SteamDeckHomebrew/PluginLoader"
   }
 }
