@@ -22,8 +22,6 @@ import React, { VFC, useState, useEffect } from "react";
 
 import { FaMagic } from "react-icons/fa";
 
-import logo from "../assets/logo.png";
-import { NumericInput } from "./components/NumericInput";
 import { NumpadInput } from "./components/NumpadInput";
 import { playSound } from "./util";
 
