@@ -79,7 +79,7 @@ export const NumpadInput = (props: NumpadInputProps): JSX.Element => {
         <div className={FieldWithSeparator}>
           <div
             className={gamepadDialogClasses.FieldLabelRow}
-            onClick={() => setActive(!active)}
+            // onClick={() => setActive(!active)}
           >
             <div
               className={gamepadDialogClasses.FieldLabel}

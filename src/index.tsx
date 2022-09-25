@@ -140,7 +140,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
     if (result.success) {
       setNumberOfMatches(result.result as number);
 
-      if(numberOfMatches <= 10)
+      if(result.result <= 10)
       {
         await loadResults();
       }
@@ -162,11 +162,9 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
   const loadResults = async () => {
     setLoading(true)
     const result = await api!.callPluginMethod("get_match_list", {});
-    console.log(result);
 
     if (result.success) {
       setResults(result.result as Result[]);
-      console.log(results);
     }
 
     setLoading(false)
