@@ -85,7 +85,7 @@ This will reset the scan and empty out all known values. This allows you to then
 Install [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader) using their instructions.
 You should then be able to find Memory Deck in the Decky store!
 
-### Future Plans
+## Future Plans
 - [ ] Add range operator support
 - [ ] Add support for searching for strings
 
