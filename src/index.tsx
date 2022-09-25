@@ -183,86 +183,81 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
   }, []);
 
   const ProcessSelection = (
-    <React.Fragment>
-      <PanelSection title="Process Selection">
-        <PanelSectionRow>
-          {/* Button that calls `loadProcessList` function */}
-          <ButtonItem
-          layout="below"
-          onClick={(e) => {
-            console.log("Clicked!");
-            loadProcessList();
-          }}
-          >
-            Reload Process List
-          </ButtonItem>
-        </PanelSectionRow>
+    <PanelSection title="Process Selection">
+      <PanelSectionRow>
+        {/* Button that calls `loadProcessList` function */}
+        <ButtonItem
+        layout="below"
+        onClick={(e) => {
+          console.log("Clicked!");
+          loadProcessList();
+        }}
+        >
+          Reload Process List
+        </ButtonItem>
+      </PanelSectionRow>
 
-        {/* If we have at least one element in processList */}
-        {/* {processList.length > 0 && ( */}
-          {/* Row for each process in processList */}
-          <React.Fragment>
-            {processList.map((process) => (
-              <PanelSectionRow>
-                <ButtonItem
-                  onClick={() => setSelectedProcess(process)}
-                  layout="below"
-                >
-                  {process?.name}
-                </ButtonItem>
-              </PanelSectionRow>
-            ))}
-          </React.Fragment>
-        {/* )} */}
+      {/* If we have at least one element in processList */}
+      {/* {processList.length > 0 && ( */}
+        {/* Row for each process in processList */}
+        <React.Fragment>
+          {processList.map((process) => (
+            <PanelSectionRow>
+              <ButtonItem
+                onClick={() => setSelectedProcess(process)}
+                layout="below"
+              >
+                {process?.name}
+              </ButtonItem>
+            </PanelSectionRow>
+          ))}
+        </React.Fragment>
+      {/* )} */}
 
-      </PanelSection>
-    </React.Fragment>
+    </PanelSection>
   );
 
   const ProcessInfo = (
-    <React.Fragment>
-      <PanelSection title="Process Info">
-        <PanelSectionRow>
-          <div className={FieldWithSeparator}>
-            <div className={gamepadDialogClasses.FieldLabelRow}>
-              <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "25%", "wordBreak": "break-all"}}>
-                Name
-              </div>
-              <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "75%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
-                {selectedProcess?.name}
-              </div>
+    <PanelSection title="Process Info">
+      <PanelSectionRow>
+        <div className={FieldWithSeparator}>
+          <div className={gamepadDialogClasses.FieldLabelRow}>
+            <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "25%", "wordBreak": "break-all"}}>
+              Name
+            </div>
+            <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "75%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
+              {selectedProcess?.name}
             </div>
           </div>
-        </PanelSectionRow>
-        <PanelSectionRow>
-          <div className={FieldWithSeparator}>
-            <div className={gamepadDialogClasses.FieldLabelRow}>
-              <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "25%", "wordBreak": "break-all"}}>
-                PID
-              </div>
-              <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "75%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
-                {selectedProcess?.pid}
-              </div>
+        </div>
+      </PanelSectionRow>
+      <PanelSectionRow>
+        <div className={FieldWithSeparator}>
+          <div className={gamepadDialogClasses.FieldLabelRow}>
+            <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "25%", "wordBreak": "break-all"}}>
+              PID
+            </div>
+            <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "75%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
+              {selectedProcess?.pid}
             </div>
           </div>
-        </PanelSectionRow>
-        <PanelSectionRow>
-          <ButtonItem layout="below" onClick={() => setSelectedProcess(undefined)}>
-            Choose Another Process
-          </ButtonItem>
-        </PanelSectionRow>
-        {/* If there are more than 0 matches */}
-        <PanelSectionRow>
-          <ButtonItem layout="below" onClick={() => reset()}>
-            Reset Search
-          </ButtonItem>
-        </PanelSectionRow>
-      </PanelSection>
-    </React.Fragment>
+        </div>
+      </PanelSectionRow>
+      <PanelSectionRow>
+        <ButtonItem layout="below" onClick={() => setSelectedProcess(undefined)}>
+          Choose Another Process
+        </ButtonItem>
+      </PanelSectionRow>
+      {/* If there are more than 0 matches */}
+      <PanelSectionRow>
+        <ButtonItem layout="below" onClick={() => reset()}>
+          Reset Search
+        </ButtonItem>
+      </PanelSectionRow>
+    </PanelSection>
   );
 
   const Search = (
-    <React.Fragment>
       <PanelSection title="Search">
         <NumpadInput label="Search Value" value={searchValue} onChange={(e) => setSearchValue(e)} />
 
@@ -299,63 +294,56 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
           )}
         </PanelSectionRow>
       </PanelSection>
-    </React.Fragment>
   )
 
   const Stats = (
-    <React.Fragment>
-      <PanelSection title="Stats">
-        <PanelSectionRow>
-          <div className={FieldWithSeparator}>
-            <div className={gamepadDialogClasses.FieldLabelRow}>
-              <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "35%", "wordBreak": "break-all"}}>
-                Number of Matches
-              </div>
-              <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "65%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
-                {numberOfMatches}
-              </div>
+    <PanelSection title="Stats">
+      <PanelSectionRow>
+        <div className={FieldWithSeparator}>
+          <div className={gamepadDialogClasses.FieldLabelRow}>
+            <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "35%", "wordBreak": "break-all"}}>
+              Number of Matches
+            </div>
+            <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "65%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
+              {numberOfMatches}
             </div>
           </div>
-        </PanelSectionRow>
-      </PanelSection>
-    </React.Fragment>
+        </div>
+      </PanelSectionRow>
+    </PanelSection>
   )
 
   const Results = (
-    <React.Fragment>
-      <PanelSection title="Results">
-        {/* For every result, show a row with the address, value and a button to set */}
-        {results.map((result) => (
-          <React.Fragment>
-            <PanelSectionRow>
-              <div className={FieldWithSeparator}>
-                <div className={gamepadDialogClasses.FieldLabelRow}>
-                  <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "50%", "wordBreak": "break-all"}}>
-                    {result.address}
-                  </div>
-                  <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "50%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
-                    {result.value}
-                  </div>
+    <PanelSection title="Results">
+      {/* For every result, show a row with the address, value and a button to set */}
+      {results.map((result) => (
+        <React.Fragment>
+          <PanelSectionRow>
+            <div className={FieldWithSeparator}>
+              <div className={gamepadDialogClasses.FieldLabelRow}>
+                <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "50%", "wordBreak": "break-all"}}>
+                  {result.address}
+                </div>
+                <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "50%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
+                  {result.value}
                 </div>
               </div>
-            </PanelSectionRow>
-            <PanelSectionRow>
-              <ButtonItem layout="below" onClick={() => {setValue(result.address)}}>
-                Change
-              </ButtonItem>
-            </PanelSectionRow>
-          </React.Fragment>
-        ))}
-      </PanelSection>
-    </React.Fragment>
+            </div>
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <ButtonItem layout="below" onClick={() => {setValue(result.address)}}>
+              Change
+            </ButtonItem>
+          </PanelSectionRow>
+        </React.Fragment>
+      ))}
+    </PanelSection>
   )
 
   const Change = (
-    <React.Fragment>
-      <PanelSection>
-        <NumpadInput label="Change Value" value={newValue} onChange={(e) => setNewValue(e)} />
-      </PanelSection>
-    </React.Fragment>
+    <PanelSection>
+      <NumpadInput label="Change Value" value={newValue} onChange={(e) => setNewValue(e)} />
+    </PanelSection>
   )
 
   return (
