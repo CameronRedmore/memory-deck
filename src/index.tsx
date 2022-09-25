@@ -11,7 +11,7 @@ import {
   showContextMenu,
   DropdownItem,
   staticClasses,
-  
+
   gamepadDialogClasses,
   joinClassNames,
   TextField,
@@ -69,7 +69,7 @@ const MatchTypes = [
   { value: 11, label: "Increased By" },
   { value: 12, label: "Decreased By" },
 
-  
+
   { value: 0, label: "Any" }, //Not overly useful, so it's last
 
 ]
@@ -83,7 +83,7 @@ interface Result {
   variabel_bytes: number[]
 }
 
-const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
+const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
   const [processList, setProcessList] = useState<Process[]>([]);
 
   const [searchValue, setSearchValue] = useState<string>("0");
@@ -106,14 +106,12 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
   // When selectedProcess is updated, send the process ID to the server
   useEffect(() => {
     if (selectedProcess) {
-      api?.callPluginMethod("attach", {pid: selectedProcess.pid, name: selectedProcess.name});
+      api?.callPluginMethod("attach", { pid: selectedProcess.pid, name: selectedProcess.name });
     }
   }, [selectedProcess]);
 
   const loadProcessList = async () => {
-    console.log("Hi");
     const result = await api!.callPluginMethod("get_processes", {});
-    console.log(result);
 
     if (result.success && result.result) {
       setProcessList(result.result as Process[]);
@@ -122,11 +120,9 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
 
   const loadExistingProcess = async () => {
     const result = await api!.callPluginMethod("get_attached_process", {});
-    console.log(result);
 
     if (result.success) {
-      if(result.result)
-      {
+      if (result.result) {
         setSelectedProcess(result.result as Process);
       }
     }
@@ -134,14 +130,12 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
 
   const search = async () => {
     setLoading(true)
-    const result = await api!.callPluginMethod("search_regions", {match_type: selectedMode, value: searchValue});
-    console.log(result);
+    const result = await api!.callPluginMethod("search_regions", { match_type: selectedMode, value: searchValue });
 
     if (result.success) {
       setNumberOfMatches(result.result as number);
 
-      if(result.result <= 10)
-      {
+      if (result.result <= 10) {
         await loadResults();
       }
     }
@@ -151,7 +145,6 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
 
   const reset = async () => {
     const result = await api!.callPluginMethod("reset_scanmem", {});
-    console.log(result);
 
     if (result.success) {
       setNumberOfMatches(0);
@@ -172,8 +165,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
 
   const setValue = async (address: string) => {
     playSound("https://steamloopback.host/sounds/deck_ui_default_activation.wav");
-    const result = await api!.callPluginMethod("set_value", {address: address, value: newValue});
-    console.log(result);
+    const result = await api!.callPluginMethod("set_value", { address: address, value: newValue });
   }
 
   // Load the process list when the plugin is loaded
@@ -187,11 +179,11 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
       <PanelSectionRow>
         {/* Button that calls `loadProcessList` function */}
         <ButtonItem
-        layout="below"
-        onClick={(e) => {
-          console.log("Clicked!");
-          loadProcessList();
-        }}
+          layout="below"
+          onClick={(e) => {
+            console.log("Clicked!");
+            loadProcessList();
+          }}
         >
           Reload Process List
         </ButtonItem>
@@ -199,19 +191,19 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
 
       {/* If we have at least one element in processList */}
       {/* {processList.length > 0 && ( */}
-        {/* Row for each process in processList */}
-        <React.Fragment>
-          {processList.map((process) => (
-            <PanelSectionRow>
-              <ButtonItem
-                onClick={() => setSelectedProcess(process)}
-                layout="below"
-              >
-                {process?.name}
-              </ButtonItem>
-            </PanelSectionRow>
-          ))}
-        </React.Fragment>
+      {/* Row for each process in processList */}
+      <React.Fragment>
+        {processList.map((process) => (
+          <PanelSectionRow>
+            <ButtonItem
+              onClick={() => setSelectedProcess(process)}
+              layout="below"
+            >
+              {process?.name}
+            </ButtonItem>
+          </PanelSectionRow>
+        ))}
+      </React.Fragment>
       {/* )} */}
 
     </PanelSection>
@@ -222,10 +214,10 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
       <PanelSectionRow>
         <div className={FieldWithSeparator}>
           <div className={gamepadDialogClasses.FieldLabelRow}>
-            <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "25%", "wordBreak": "break-all"}}>
+            <div className={gamepadDialogClasses.FieldLabel} style={{ "maxWidth": "25%", "wordBreak": "break-all" }}>
               Name
             </div>
-            <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "75%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
+            <div className={gamepadDialogClasses.FieldChildren} style={{ "maxWidth": "75%", "width": "100%", "wordBreak": "break-all", "textAlign": "end" }}>
               {selectedProcess?.name}
             </div>
           </div>
@@ -234,10 +226,10 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
       <PanelSectionRow>
         <div className={FieldWithSeparator}>
           <div className={gamepadDialogClasses.FieldLabelRow}>
-            <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "25%", "wordBreak": "break-all"}}>
+            <div className={gamepadDialogClasses.FieldLabel} style={{ "maxWidth": "25%", "wordBreak": "break-all" }}>
               PID
             </div>
-            <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "75%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
+            <div className={gamepadDialogClasses.FieldChildren} style={{ "maxWidth": "75%", "width": "100%", "wordBreak": "break-all", "textAlign": "end" }}>
               {selectedProcess?.pid}
             </div>
           </div>
@@ -258,42 +250,42 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
   );
 
   const Search = (
-      <PanelSection title="Search">
-        <NumpadInput label="Search Value" value={searchValue} onChange={(e) => setSearchValue(e)} />
+    <PanelSection title="Search">
+      <NumpadInput label="Search Value" value={searchValue} onChange={(e) => setSearchValue(e)} />
 
-        <PanelSectionRow>
-          <DropdownItem
-            label="Search Type"
-            description="What type of search to make."
-            menuLabel="Search Type"
-            rgOptions={MatchTypes.map((o) => ({
-              data: o.value,
-              label: o.label
-            }))}
-            
-            selectedOption={
-              selectedMode
-            }
-            
-            onChange={(newVal: { data: number; label: string }) => {
-              setSelectedMode(newVal.data);
-            }}
-          />
-        </PanelSectionRow>
+      <PanelSectionRow>
+        <DropdownItem
+          label="Search Type"
+          description="What type of search to make."
+          menuLabel="Search Type"
+          rgOptions={MatchTypes.map((o) => ({
+            data: o.value,
+            label: o.label
+          }))}
 
-        <PanelSectionRow>
-          {/* Show Button if not loading */}
-          {!loading && (
-            <ButtonItem layout="below" onClick={() => {search()}}>
-              Search
-            </ButtonItem>
-          )}
-          {/* Otherwise, show spinner */}
-          {loading && (
-            <SteamSpinner />
-          )}
-        </PanelSectionRow>
-      </PanelSection>
+          selectedOption={
+            selectedMode
+          }
+
+          onChange={(newVal: { data: number; label: string }) => {
+            setSelectedMode(newVal.data);
+          }}
+        />
+      </PanelSectionRow>
+
+      <PanelSectionRow>
+        {/* Show Button if not loading */}
+        {!loading && (
+          <ButtonItem layout="below" onClick={() => { search() }}>
+            Search
+          </ButtonItem>
+        )}
+        {/* Otherwise, show spinner */}
+        {loading && (
+          <SteamSpinner />
+        )}
+      </PanelSectionRow>
+    </PanelSection>
   )
 
   const Stats = (
@@ -301,10 +293,10 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
       <PanelSectionRow>
         <div className={FieldWithSeparator}>
           <div className={gamepadDialogClasses.FieldLabelRow}>
-            <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "35%", "wordBreak": "break-all"}}>
+            <div className={gamepadDialogClasses.FieldLabel} style={{ "maxWidth": "35%", "wordBreak": "break-all" }}>
               Number of Matches
             </div>
-            <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "65%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
+            <div className={gamepadDialogClasses.FieldChildren} style={{ "maxWidth": "65%", "width": "100%", "wordBreak": "break-all", "textAlign": "end" }}>
               {numberOfMatches}
             </div>
           </div>
@@ -321,17 +313,17 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
           <PanelSectionRow>
             <div className={FieldWithSeparator}>
               <div className={gamepadDialogClasses.FieldLabelRow}>
-                <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "50%", "wordBreak": "break-all"}}>
+                <div className={gamepadDialogClasses.FieldLabel} style={{ "maxWidth": "50%", "wordBreak": "break-all" }}>
                   {result.address}
                 </div>
-                <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "50%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
+                <div className={gamepadDialogClasses.FieldChildren} style={{ "maxWidth": "50%", "width": "100%", "wordBreak": "break-all", "textAlign": "end" }}>
                   {result.value}
                 </div>
               </div>
             </div>
           </PanelSectionRow>
           <PanelSectionRow>
-            <ButtonItem layout="below" onClick={() => {setValue(result.address)}}>
+            <ButtonItem layout="below" onClick={() => { setValue(result.address) }}>
               Change
             </ButtonItem>
           </PanelSectionRow>
@@ -352,7 +344,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
       {selectedProcess && ProcessInfo}
       {selectedProcess && Search}
       {selectedProcess && Stats}
-  
+
       {/* If there are fewer than 10 results */}
       {selectedProcess && numberOfMatches > 0 && numberOfMatches < 10 && Change}
       {selectedProcess && numberOfMatches > 0 && numberOfMatches < 10 && Results}

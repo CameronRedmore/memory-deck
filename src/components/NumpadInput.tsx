@@ -1,7 +1,7 @@
 // Basic React component that renders a numeric input field
 
 import React, { useEffect, useState } from "react";
-import {PanelSection, PanelSectionRow, gamepadDialogClasses, joinClassNames, DialogButton, Focusable} from "decky-frontend-lib";
+import { PanelSection, PanelSectionRow, gamepadDialogClasses, joinClassNames, DialogButton, Focusable } from "decky-frontend-lib";
 
 import { playSound } from "../util";
 
@@ -22,12 +22,10 @@ export const NumpadInput = (props: NumpadInputProps): JSX.Element => {
   const [active, setActive] = useState(true);
 
   useEffect(() => {
-    if(active)
-    {
+    if (active) {
       playSound("https://steamloopback.host/sounds/deck_ui_side_menu_fly_in.wav");
     }
-    else
-    {
+    else {
       playSound("https://steamloopback.host/sounds/deck_ui_side_menu_fly_out.wav");
     }
   }, [active]);
@@ -41,17 +39,15 @@ export const NumpadInput = (props: NumpadInputProps): JSX.Element => {
 
     //Concat the digit to the current value
     let newValue = inputValue + digit;
-    if(inputValue === "0") {
-      if(digit === ".")
-      {
+    if (inputValue === "0") {
+      if (digit === ".") {
         newValue = "0.";
       }
-      else
-      {
-      newValue = digit;
+      else {
+        newValue = digit;
       }
     }
-    
+
     setInputValue(newValue);
     onChange(newValue);
 
@@ -60,7 +56,7 @@ export const NumpadInput = (props: NumpadInputProps): JSX.Element => {
 
   const backspace = () => {
     playSound("https://steamloopback.host/sounds/deck_ui_misc_10.wav");
-    if(inputValue.length > 1) {
+    if (inputValue.length > 1) {
       //Remove the last digit from the current value
       const newValue = inputValue.slice(0, -1);
       setInputValue(newValue);
@@ -79,17 +75,17 @@ export const NumpadInput = (props: NumpadInputProps): JSX.Element => {
         <div className={FieldWithSeparator}>
           <div
             className={gamepadDialogClasses.FieldLabelRow}
-            // onClick={() => setActive(!active)}
+          // onClick={() => setActive(!active)}
           >
             <div
               className={gamepadDialogClasses.FieldLabel}
-              style={{"maxWidth": "50%", "wordBreak": "keep-all"}}
+              style={{ "maxWidth": "50%", "wordBreak": "keep-all" }}
             >
               {label}
             </div>
             <div
               className={gamepadDialogClasses.FieldChildren}
-              style={{"maxWidth": "50%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}
+              style={{ "maxWidth": "50%", "width": "100%", "wordBreak": "break-all", "textAlign": "end" }}
             >
               {inputValue}
             </div>

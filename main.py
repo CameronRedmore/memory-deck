@@ -43,10 +43,13 @@ c_scan_data_type_t = c_uint32
     maps.h: region_scan_level_t
         determine which regions we need
 '''
+
+
 class RegionScanLevel():
-    REGION_ALL = 0 # each of them 
-    REGION_HEAP_STACK_EXECUTABLE = 1 # heap, stack, executable 
-    REGION_HEAP_STACK_EXECUTABLE_BSS = 2 # heap, stack, executable, bss
+    REGION_ALL = 0  # each of them
+    REGION_HEAP_STACK_EXECUTABLE = 1  # heap, stack, executable
+    REGION_HEAP_STACK_EXECUTABLE_BSS = 2  # heap, stack, executable, bss
+
 
 '''
     value.h: match_flags
@@ -56,23 +59,32 @@ class RegionScanLevel():
         NAMING: Primitive, single-bit flags are called `flag_*`, while aggregates,          
         defined for convenience, are called `flags_*`
 '''
+
+
 class MatchFlag():
 
     FLAGS_EMPTY = 0
 
-    FLAG_U8B  = 1 << 0  # could be an unsigned  8-bit variable (e.g. unsigned char)      
-    FLAG_S8B  = 1 << 1  # could be a    signed  8-bit variable (e.g. signed char)        
-    FLAG_U16B = 1 << 2  # could be an unsigned 16-bit variable (e.g. unsigned short)     
-    FLAG_S16B = 1 << 3  # could be a    signed 16-bit variable (e.g. short)              
-    FLAG_U32B = 1 << 4  # could be an unsigned 32-bit variable (e.g. unsigned int)       
-    FLAG_S32B = 1 << 5  # could be a    signed 32-bit variable (e.g. int)                
-    FLAG_U64B = 1 << 6  # could be an unsigned 64-bit variable (e.g. unsigned long long) 
-    FLAG_S64B = 1 << 7  # could be a    signed 64-bit variable (e.g. long long)          
+    # could be an unsigned  8-bit variable (e.g. unsigned char)
+    FLAG_U8B = 1 << 0
+    # could be a    signed  8-bit variable (e.g. signed char)
+    FLAG_S8B = 1 << 1
+    # could be an unsigned 16-bit variable (e.g. unsigned short)
+    FLAG_U16B = 1 << 2
+    FLAG_S16B = 1 << 3  # could be a    signed 16-bit variable (e.g. short)
+    # could be an unsigned 32-bit variable (e.g. unsigned int)
+    FLAG_U32B = 1 << 4
+    FLAG_S32B = 1 << 5  # could be a    signed 32-bit variable (e.g. int)
+    # could be an unsigned 64-bit variable (e.g. unsigned long long)
+    FLAG_U64B = 1 << 6
+    FLAG_S64B = 1 << 7  # could be a    signed 64-bit variable (e.g. long long)
 
-    FLAG_F32B = 1 << 8  # could be a 32-bit floating point variable (i.e. float)         
-    FLAG_F64B = 1 << 9  # could be a 64-bit floating point variable (i.e. double)        
+    # could be a 32-bit floating point variable (i.e. float)
+    FLAG_F32B = 1 << 8
+    # could be a 64-bit floating point variable (i.e. double)
+    FLAG_F64B = 1 << 9
 
-    FLAGS_I8B  = FLAG_U8B  | FLAG_S8B
+    FLAGS_I8B = FLAG_U8B | FLAG_S8B
     FLAGS_I16B = FLAG_U16B | FLAG_S16B
     FLAGS_I32B = FLAG_U32B | FLAG_S32B
     FLAGS_I64B = FLAG_U64B | FLAG_S64B
@@ -81,12 +93,13 @@ class MatchFlag():
     FLAGS_FLOAT = FLAG_F32B | FLAG_F64B
     FLAGS_ALL = FLAGS_INTEGER | FLAGS_FLOAT
 
-    FLAGS_8B   = FLAGS_I8B
-    FLAGS_16B  = FLAGS_I16B
-    FLAGS_32B  = FLAGS_I32B | FLAG_F32B
-    FLAGS_64B  = FLAGS_I64B | FLAG_F64B
+    FLAGS_8B = FLAGS_I8B
+    FLAGS_16B = FLAGS_I16B
+    FLAGS_32B = FLAGS_I32B | FLAG_F32B
+    FLAGS_64B = FLAGS_I64B | FLAG_F64B
 
     FLAGS_MAX = 0XFFFF
+
 
 '''
     value.h: mem64_t
@@ -99,21 +112,24 @@ class MatchFlag():
         that don't depend on alignment.                                                         * 
         So NEVER EVER dereference a mem64_t*, but use its accessors to obtain the needed type.  * 
 '''
+
+
 class Mem64(Union):
     _fields_ = [
-        ("int8_value",              c_int8), 
-        ("uint8_value",             c_uint8), 
-        ("int16_value",             c_int16), 
-        ("uint16_value",            c_uint16), 
-        ("int32_value",             c_int32), 
-        ("uint32_value",            c_uint32), 
-        ("int64_value",             c_int64), 
-        ("uint64_value",            c_uint64), 
-        ("float32_value",           c_float), 
-        ("float64_value",           c_double), 
+        ("int8_value",              c_int8),
+        ("uint8_value",             c_uint8),
+        ("int16_value",             c_int16),
+        ("uint16_value",            c_uint16),
+        ("int32_value",             c_int32),
+        ("uint32_value",            c_uint32),
+        ("int64_value",             c_int64),
+        ("uint64_value",            c_uint64),
+        ("float32_value",           c_float),
+        ("float64_value",           c_double),
         ("bytes[sizeof(int64_t)]",  c_uint8 * sizeof(c_int64)),
-        ("chars[sizeof(int64_t)]",  c_char * sizeof(c_int64))   
+        ("chars[sizeof(int64_t)]",  c_char * sizeof(c_int64))
     ]
+
 
 '''
     value.h: wildcard_t
@@ -121,9 +137,12 @@ class Mem64(Union):
         memory before the comparison, so that '??' wildcards always return true
         It's possible to extend them to fully granular wildcard-ing, if needed
 '''
+
+
 class ValueWildcard():
     FIXED = 0xff
     WILDCARD = 0x00
+
 
 '''
     value.h: uservalue_t
@@ -149,6 +168,7 @@ class ValueWildcard():
 #     match_flags flags;
 # } uservalue_t;
 
+
 class UserValue(Structure):
     _fields_ = [
         ("int8_value",      c_int8),
@@ -159,7 +179,7 @@ class UserValue(Structure):
         ("uint32_value",    c_uint32),
         ("int64_value",     c_int64),
         ("uint64_value",    c_uint64),
-        ("float32_value",   c_float),    
+        ("float32_value",   c_float),
         ("float64_value",   c_double),
         ("bytearray_value", POINTER(c_uint8)),
         ("wildcard_value",  POINTER(c_wildcard_t)),
@@ -167,27 +187,30 @@ class UserValue(Structure):
         ("flags",     c_match_flags)
     ]
 
+
 ''' 
     value.h: value_t 
         this struct describes matched values
 '''
+
+
 class SetValue(Structure):
 
     class SetValueUnion(Union):
         _fields_ = [
-            ("int8_value",              c_int8), 
-            ("uint8_value",             c_uint8), 
-            ("int16_value",             c_int16), 
-            ("uint16_value",            c_uint16), 
-            ("int32_value",             c_int32), 
-            ("uint32_value",            c_uint32), 
-            ("int64_value",             c_int64), 
-            ("uint64_value",            c_uint64), 
-            ("float32_value",           c_float), 
-            ("float64_value",           c_double), 
+            ("int8_value",              c_int8),
+            ("uint8_value",             c_uint8),
+            ("int16_value",             c_int16),
+            ("uint16_value",            c_uint16),
+            ("int32_value",             c_int32),
+            ("uint32_value",            c_uint32),
+            ("int64_value",             c_int64),
+            ("uint64_value",            c_uint64),
+            ("float32_value",           c_float),
+            ("float64_value",           c_double),
             ("bytes[sizeof(int64_t)]",  c_uint8 * sizeof(c_int64)),
             ("chars[sizeof(int64_t)]",  c_char * sizeof(c_int64))
-    ]
+        ]
 
     _fields_ = [
         ("value", SetValueUnion),
@@ -196,10 +219,12 @@ class SetValue(Structure):
 
 
 ''' scanroutines.h: scan_data_type_t '''
+
+
 class ScanDataType():
-    ANYNUMBER = 0 # ANYINTEGER or ANYFLOAT
-    ANYINTEGER = 1 # INTEGER of whatever width
-    ANYFLOAT = 2 # FLOAT of whatever width
+    ANYNUMBER = 0  # ANYINTEGER or ANYFLOAT
+    ANYINTEGER = 1  # INTEGER of whatever width
+    ANYFLOAT = 2  # FLOAT of whatever width
     INTEGER8 = 3
     INTEGER16 = 4
     INTEGER32 = 5
@@ -211,6 +236,8 @@ class ScanDataType():
 
 
 ''' scanroutines.h: scan_match_type_t '''
+
+
 class ScanMatchType():
     MATCH_ANY = 0                # for snapshot
     # following: compare with a given value
@@ -233,6 +260,8 @@ class ScanMatchType():
 #     uint8_t old_value;
 #     match_flags match_info;
 # } old_value_and_match_info;
+
+
 class MatchInfo(Structure):
     _fields_ = [
         ("old_value", c_uint8),
@@ -244,13 +273,15 @@ class MatchInfo(Structure):
 #     size_t number_of_bytes;
 #     old_value_and_match_info data[0];
 # } matches_and_old_values_swath;
+
+
 class MatchSwath(Structure):
     _fields_ = [
         ("first_byte_in_child", c_void_p),
         ("number_of_bytes", c_size_t),
         ("data", MatchInfo * 0)
     ]
-    
+
 
 # typedef struct {
 #     size_t bytes_allocated;
@@ -264,67 +295,78 @@ class MatchArray(Structure):
         ("swaths", MatchSwath * 0)
     ]
 
+
 ''' scanmem.h: globals_t::options '''
+
+
 class GlobalOptions(Structure):
     _fields_ = [
-            ("alignment",           c_uint16),
-            ("debug",               c_uint16),
-            ("backend",             c_uint16),
-            ("scan_data_type",      c_scan_data_type_t), 
-            ("region_scan_level",   c_region_scan_level_t),
-            ("dump_with_ascii",     c_uint16),
-            ("reverse_endianness",  c_uint16),
-            ("no_ptrace",           c_uint16)
+        ("alignment",           c_uint16),
+        ("debug",               c_uint16),
+        ("backend",             c_uint16),
+        ("scan_data_type",      c_scan_data_type_t),
+        ("region_scan_level",   c_region_scan_level_t),
+        ("dump_with_ascii",     c_uint16),
+        ("reverse_endianness",  c_uint16),
+        ("no_ptrace",           c_uint16)
     ]
+
 
 ''' scanmem.h: globals_t '''
+
+
 class Globals(Structure):
     _fields_ = [
-            ("exit",            c_uint32, 1),
-            ("target",          c_pid_t),
-            ("matches",         c_void_p), # matches_and_old_values_array*
-            ("num_matches",     c_uint64),
-            ("scan_progress",   c_double),
-            ("stop_flag",       c_bool),
-            ("regions",         c_list_t_ptr),
-            ("commands",        c_list_t_ptr), 
-            ("current_cmdline", c_char_p),
-            ("printversion",    c_void_p), # void (*printversion)(FILE *outfd);
-            ("options",         GlobalOptions)
+        ("exit",            c_uint32, 1),
+        ("target",          c_pid_t),
+        ("matches",         c_void_p),  # matches_and_old_values_array*
+        ("num_matches",     c_uint64),
+        ("scan_progress",   c_double),
+        ("stop_flag",       c_bool),
+        ("regions",         c_list_t_ptr),
+        ("commands",        c_list_t_ptr),
+        ("current_cmdline", c_char_p),
+        # void (*printversion)(FILE *outfd);
+        ("printversion",    c_void_p),
+        ("options",         GlobalOptions)
     ]
 
-backend.sm_init.argtypes            = []
-backend.sm_cleanup.argtypes         = []
-backend.sm_set_backend.argtypes     = []
-backend.sm_get_num_matches.argtypes     = []
-backend.sm_get_scan_progress.argtypes      = []
-backend.sm_backend_exec_cmd.argtypes= [c_char_p]
-backend.sm_set_stop_flag.argtypes       = [c_bool]
+
+backend.sm_init.argtypes = []
+backend.sm_cleanup.argtypes = []
+backend.sm_set_backend.argtypes = []
+backend.sm_get_num_matches.argtypes = []
+backend.sm_get_scan_progress.argtypes = []
+backend.sm_backend_exec_cmd.argtypes = [c_char_p]
+backend.sm_set_stop_flag.argtypes = [c_bool]
 # backend.sm_detach.argtypes              = [c_pid_t]
-backend.sm_setaddr.argtypes             = [c_pid_t, c_void_p, POINTER(SetValue)]
-backend.sm_checkmatches.argtypes        = [POINTER(Globals), c_scan_match_type, POINTER(UserValue)]
-backend.sm_searchregions.argtypes       = [POINTER(Globals), c_scan_match_type, POINTER(UserValue)]
-backend.sm_peekdata.argtypes            = [c_void_p, c_uint16, POINTER(POINTER(Mem64)), c_size_t]
-backend.sm_attach.argtypes              = [c_pid_t]
-backend.sm_read_array.argtypes          = [c_pid_t, c_void_p, c_void_p, c_size_t]
-backend.sm_write_array.argtypes         = [c_pid_t, c_void_p, c_void_p, c_size_t]
-backend.sm_readmaps.argtypes            = [c_pid_t, c_list_t_ptr, c_region_scan_level_t]
+backend.sm_setaddr.argtypes = [c_pid_t, c_void_p, POINTER(SetValue)]
+backend.sm_checkmatches.argtypes = [
+    POINTER(Globals), c_scan_match_type, POINTER(UserValue)]
+backend.sm_searchregions.argtypes = [
+    POINTER(Globals), c_scan_match_type, POINTER(UserValue)]
+backend.sm_peekdata.argtypes = [
+    c_void_p, c_uint16, POINTER(POINTER(Mem64)), c_size_t]
+backend.sm_attach.argtypes = [c_pid_t]
+backend.sm_read_array.argtypes = [c_pid_t, c_void_p, c_void_p, c_size_t]
+backend.sm_write_array.argtypes = [c_pid_t, c_void_p, c_void_p, c_size_t]
+backend.sm_readmaps.argtypes = [c_pid_t, c_list_t_ptr, c_region_scan_level_t]
 # backend.sm_reset.argtypes               = [POINTER(Globals)]
 
-backend.sm_init.restype             = c_bool
+backend.sm_init.restype = c_bool
 backend.sm_backend_exec_cmd.restype = c_bool
-backend.sm_get_num_matches.restype      = c_ulong
-backend.sm_get_version.restype          = c_char_p
-backend.sm_get_scan_progress.restype    = c_double
-backend.sm_detach.restype               = c_bool 
-backend.sm_setaddr.restype              = c_bool 
-backend.sm_checkmatches.restype         = c_bool 
-backend.sm_searchregions.restype        = c_bool 
-backend.sm_peekdata.restype             = c_bool 
-backend.sm_attach.restype               = c_bool 
-backend.sm_read_array.restype           = c_bool 
-backend.sm_write_array.restype          = c_bool 
-backend.sm_readmaps.restype             = c_bool
+backend.sm_get_num_matches.restype = c_ulong
+backend.sm_get_version.restype = c_char_p
+backend.sm_get_scan_progress.restype = c_double
+backend.sm_detach.restype = c_bool
+backend.sm_setaddr.restype = c_bool
+backend.sm_checkmatches.restype = c_bool
+backend.sm_searchregions.restype = c_bool
+backend.sm_peekdata.restype = c_bool
+backend.sm_attach.restype = c_bool
+backend.sm_read_array.restype = c_bool
+backend.sm_write_array.restype = c_bool
+backend.sm_readmaps.restype = c_bool
 # backend.sm_reset.restype                = c_bool
 
 
@@ -341,10 +383,11 @@ class Scanmem():
             self.cleanup()
 
     def get_global_vars(self):
-            return Globals.in_dll(backend, "sm_globals")
+        return Globals.in_dll(backend, "sm_globals")
 
     ''' commands.h '''
     ''' bool sm_backend_exec_cmd(globals_t *vars, const char *commandline); '''
+
     def exec_command(self, strCmd):
         '''
             python strings are wchars, sm expects byte wide ascii.
@@ -354,33 +397,42 @@ class Scanmem():
 
     ''' scanmem.h '''
     ''' bool sm_init(globals_t *vars); '''
+
     def init(self):
-        if self.are_commands_initialized: return False
+        if self.are_commands_initialized:
+            return False
         print("Initialising.")
         return backend.sm_init()
 
     ''' void sm_cleanup(globals_t *vars); '''
+
     def cleanup(self):
-        if not self.are_commands_initialized: return False
+        if not self.are_commands_initialized:
+            return False
         return backend.sm_cleanup()
 
     ''' unsigned long sm_get_num_matches(globals_t *vars); '''
+
     def get_num_matches(self):
         return backend.sm_get_num_matches()
 
     ''' const char *sm_get_version(void); '''
+
     def get_version(self):
         return c_char_p(backend.sm_get_version()).value
 
     ''' double sm_get_scan_progress(globals_t *vars); '''
+
     def get_scan_progress(self):
         return backend.sm_get_scan_progress()
 
     ''' void sm_set_stop_flag(globals_t *vars, bool stop_flag); '''
+
     def set_stop_flag(self, boolState):
         backend.sm_set_stop_flag(boolState)
 
     ''' void sm_set_backend(void); '''
+
     def set_backend(self):
         backend.sm_set_backend()
 
@@ -455,6 +507,7 @@ class Scanmem():
 #     matches_and_old_values_swath swaths[0];
 # } matches_and_old_values_array;
 
+
     def get_matches(self):
         num_matches = self.get_num_matches()
         matches = []
@@ -491,7 +544,8 @@ class Scanmem():
                 current_address += sizeof(extra_byte)
 
             # Turn bytes into singular integer
-            variable_int = int.from_bytes(bytearray(variable_bytes), byteorder='little')
+            variable_int = int.from_bytes(
+                bytearray(variable_bytes), byteorder='little')
 
             matches.append({
                 "address": hex(first_byte_in_child.value),
@@ -505,11 +559,9 @@ class Scanmem():
         return matches
 
 
-
 # # bool sm_reset(globals_t* vars);
 #     def reset(self):
 #         return backend.sm_reset(self.globals_ptr)
-
 INT8_MIN = -128
 INT16_MIN = -32767-1
 INT32_MIN = -2147483647-1
@@ -535,6 +587,7 @@ def parse_uservalue(input):
         print("Parsed as float %s", val)
         return val
     return None
+
 
 def parse_uservalue_int(input, val):
     snum = None
@@ -579,7 +632,8 @@ def parse_uservalue_int(input, val):
         val.flags |= MatchFlag.FLAG_S64B
         val.int64_value = snum
     return True
-  
+
+
 def parse_uservalue_float(input, val):
     try:
         num = float(input)
@@ -590,21 +644,25 @@ def parse_uservalue_float(input, val):
     val.float64_value = num
     return True
 
+
 class Plugin:
-    #Method to return list of process names and PIDs on the system.
+    # Method to return list of process names and PIDs on the system.
     async def get_processes(self):
         print("Getting processes")
 
         process_list = []
 
         # Get a list of processes using ps for the current user, we need the PID and the untruncated process name.
-        ps = subprocess.Popen(["ps", "-u", "1000", "-o", "pid,command"], stdout=subprocess.PIPE)
+        ps = subprocess.Popen(
+            ["ps", "-u", "1000", "-o", "pid,command"], stdout=subprocess.PIPE)
 
-        output = subprocess.check_output(('grep', '-v', 'grep'), stdin=ps.stdout)
+        output = subprocess.check_output(
+            ('grep', '-v', 'grep'), stdin=ps.stdout)
         ps.wait()
-        
+
         # Blacklist some processes
-        blacklist = ["ps ", "systemd", "reaper ", "pressure-vessel", "proton ", "power-button-handler", "ibus", "xbindkeys", "COMMAND", "wineserver", "system32", "socat", "sd-pam", "gamemoded", "sdgyrodsu", "dbus-daemon", "kwalletd5", "gamescope-session", "gamescope", "PluginLoader", "pipewire", "Xwayland", "wireplumber", "ibus-daemon", "sshd", "mangoapp", "steamwebhelper", "steam ", "xdg-desktop-portal", "xdg-document-portal", "xdg-permission-store", "bash"]
+        blacklist = ["ps ", "systemd", "reaper ", "pressure-vessel", "proton ", "power-button-handler", "ibus", "xbindkeys", "COMMAND", "wineserver", "system32", "socat", "sd-pam", "gamemoded", "sdgyrodsu", "dbus-daemon", "kwalletd5",
+                     "gamescope-session", "gamescope", "PluginLoader", "pipewire", "Xwayland", "wireplumber", "ibus-daemon", "sshd", "mangoapp", "steamwebhelper", "steam ", "xdg-desktop-portal", "xdg-document-portal", "xdg-permission-store", "bash"]
 
         # Parse output
         for line in output.splitlines():
@@ -617,10 +675,10 @@ class Plugin:
         # Remove blacklisted processes#
         for process in process_list:
             for blacklist_item in blacklist:
-                #Check if blacklist item is contained in the process name
+                # Check if blacklist item is contained in the process name
                 if blacklist_item in process["name"]:
                     process_list.remove(process)
-        
+
         return process_list
 
     # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
@@ -661,10 +719,10 @@ class Plugin:
 
         pass
 
-
     # Method to attach to a process
+
     async def attach(self, pid, name):
-        print("Attaching to process %s", pid)
+        print("Attaching to process ", pid)
         self.pid = int(pid)
         self.process_name = name
 
@@ -676,7 +734,7 @@ class Plugin:
         pass
 
     async def search_regions(self, match_type, value):
-        print("Searching for %s %s", match_type, value)
+        print("Searching for ", match_type, value)
 
         val = parse_uservalue(value)
 
@@ -686,7 +744,7 @@ class Plugin:
 
         # print(self.scanmem.globals.matches)
 
-        print ("Valid value!")
+        print("Valid value!")
 
         if self.scanmem.globals.matches is None:
             print("No matches, scanning all regions")
@@ -700,7 +758,6 @@ class Plugin:
 
         return matches
 
-    
     async def search(self, operator, value):
         return self.scanmem.exec_command(operator + " " + value)
 
@@ -716,7 +773,7 @@ class Plugin:
 #     await plugin._main()
 
 #     print(await plugin.get_processes())
-    
+
 #     # Read PID from stdin
 #     print("Enter PID: ")
 #     pid = int(input('> '))
@@ -732,11 +789,11 @@ class Plugin:
 
 #         if newValue == "exit":
 #             return
-        
+
 #         if newValue == "reset":
 #             plugin.scanmem.reset()
 #             continue
- 
+
 #         if newValue == "list":
 #             plugin.scanmem.exec_command("list")
 #             continue
@@ -758,9 +815,6 @@ class Plugin:
 #             print(await plugin.get_match_list())
 
 #         print("Finished")
-
-
-
 
 
 # if __name__ == "__main__":
