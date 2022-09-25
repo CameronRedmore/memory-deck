@@ -9,72 +9,393 @@ import {
   Router,
   ServerAPI,
   showContextMenu,
+  DropdownItem,
   staticClasses,
+  
+  gamepadDialogClasses,
+  joinClassNames,
+  TextField,
+  SteamSpinner
 } from "decky-frontend-lib";
-import { VFC } from "react";
-import { FaShip } from "react-icons/fa";
+
+import React, { VFC, useState, useEffect } from "react";
+
+import { FaMagic } from "react-icons/fa";
 
 import logo from "../assets/logo.png";
+import { NumericInput } from "./components/NumericInput";
+import { NumpadInput } from "./components/NumpadInput";
+import { playSound } from "./util";
 
-// interface AddMethodArgs {
-//   left: number;
-//   right: number;
-// }
+//Process type with Name and Process ID properties
+interface Process {
+  name: string;
+  pid: number;
+}
+
+//api variable as ServerAPI type defaulting to null
+let api: ServerAPI | null = null;
+
+const FieldWithSeparator = joinClassNames(gamepadDialogClasses.Field, gamepadDialogClasses.WithBottomSeparatorStandard);
+
+// MATCH_ANY = 0                # for snapshot
+// # following: compare with a given value
+// MATCH_EQUAL_TO = 1
+// MATCH_NOTEQUAL_TO = 2
+// MATCH_GREATER_THAN = 3
+// MATCH_LESS_THAN = 4
+// MATCH_RANGE = 5
+// # following: compare with the old value
+// MATCH_UPDATE = 6
+// MATCH_NOT_CHANGED = 7
+// MATCH_CHANGED = 8
+// MATCH_INCREASED = 9
+// MATCH_DECREASED = 10
+// # following: compare with both given value and old value
+// MATCH_INCREASED_BY = 11
+// MATCH_DECREASED_BY = 12
+
+const MatchTypes = [
+  { value: 0, label: "Any" },
+  { value: 1, label: "==" },
+  { value: 2, label: "!=" },
+  { value: 3, label: ">" },
+  { value: 4, label: "<" },
+  { value: 5, label: "Range" },
+  // { value: 6, label: "Update" },
+  { value: 7, label: "Not Changed" },
+  { value: 8, label: "Changed" },
+
+  { value: 9, label: "Increased" },
+  { value: 10, label: "Decreased" },
+
+  { value: 11, label: "Increased By" },
+  { value: 12, label: "Decreased By" },
+
+]
+
+interface Result {
+  first_byte_in_child: string;
+  address: string;
+  value: number;
+  match_info: number;
+  number_of_bytes: number;
+  variabel_bytes: number[]
+}
 
 const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
-  // const [result, setResult] = useState<number | undefined>();
+  const [processList, setProcessList] = useState<Process[]>([]);
 
-  // const onClick = async () => {
-  //   const result = await serverAPI.callPluginMethod<AddMethodArgs, number>(
-  //     "add",
-  //     {
-  //       left: 2,
-  //       right: 2,
-  //     }
-  //   );
-  //   if (result.success) {
-  //     setResult(result.result);
-  //   }
-  // };
+  const [searchValue, setSearchValue] = useState<string>("0");
+
+  const [selectedMode, setSelectedMode] = useState<number>(1);
+
+  const [selectedProcess, setSelectedProcess] = useState<Process>();
+
+  const [numberOfMatches, setNumberOfMatches] = useState<number>(0);
+  const [scanProgress, setScanProgress] = useState<number>(0);
+
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const [newValue, setNewValue] = useState<string>("0");
+
+  const [results, setResults] = useState<any[]>([]);
+
+  const [step, setStep] = useState<number>(1);
+
+  // When selectedProcess is updated, send the process ID to the server
+  useEffect(() => {
+    if (selectedProcess) {
+      api?.callPluginMethod("attach", {pid: selectedProcess.pid, name: selectedProcess.name});
+    }
+  }, [selectedProcess]);
+
+  const loadProcessList = async () => {
+    console.log("Hi");
+    const result = await api!.callPluginMethod("get_processes", {});
+    console.log(result);
+
+    if (result.success && result.result) {
+      setProcessList(result.result as Process[]);
+    }
+  }
+
+  const loadExistingProcess = async () => {
+    const result = await api!.callPluginMethod("get_attached_process", {});
+    console.log(result);
+
+    if (result.success) {
+      if(result.result)
+      {
+        setSelectedProcess(result.result as Process);
+      }
+    }
+  }
+
+  const search = async () => {
+    setLoading(true)
+    const result = await api!.callPluginMethod("search_regions", {match_type: selectedMode, value: searchValue});
+    console.log(result);
+
+    if (result.success) {
+      setNumberOfMatches(result.result as number);
+
+      if(numberOfMatches <= 10)
+      {
+        await loadResults();
+      }
+    }
+
+    setLoading(false)
+  }
+
+  const reset = async () => {
+    const result = await api!.callPluginMethod("reset_scanmem", {});
+    console.log(result);
+
+    if (result.success) {
+      setNumberOfMatches(0);
+      setResults([]);
+    }
+  }
+
+  const loadResults = async () => {
+    setLoading(true)
+    const result = await api!.callPluginMethod("get_match_list", {});
+    console.log(result);
+
+    if (result.success) {
+      setResults(result.result as Result[]);
+      console.log(results);
+    }
+  }
+
+  const setValue = async (address: string) => {
+    playSound("https://steamloopback.host/sounds/deck_ui_default_activation.wav");
+    const result = await api!.callPluginMethod("set_value", {address: address, value: newValue});
+    console.log(result);
+  }
+
+  // Load the process list when the plugin is loaded
+  useEffect(() => {
+    loadProcessList();
+    loadExistingProcess();
+  }, []);
+
+  const ProcessSelection = (
+    <React.Fragment>
+      <PanelSection title="Process Selection">
+        <PanelSectionRow>
+          {/* Button that calls `loadProcessList` function */}
+          <ButtonItem
+          layout="below"
+          onClick={(e) => {
+            console.log("Clicked!");
+            loadProcessList();
+          }}
+          >
+            Reload Process List
+          </ButtonItem>
+        </PanelSectionRow>
+
+        {/* If we have at least one element in processList */}
+        {/* {processList.length > 0 && ( */}
+          {/* Row for each process in processList */}
+          <React.Fragment>
+            {processList.map((process) => (
+              <PanelSectionRow>
+                <ButtonItem
+                  onClick={() => setSelectedProcess(process)}
+                  layout="below"
+                >
+                  {process?.name}
+                </ButtonItem>
+              </PanelSectionRow>
+            ))}
+          </React.Fragment>
+        {/* )} */}
+
+      </PanelSection>
+    </React.Fragment>
+  );
+
+  const ProcessInfo = (
+    <React.Fragment>
+      <PanelSection title="Process Info">
+        <PanelSectionRow>
+          <div className={FieldWithSeparator}>
+            <div className={gamepadDialogClasses.FieldLabelRow}>
+              <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "25%", "wordBreak": "break-all"}}>
+                Name
+              </div>
+              <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "75%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
+                {selectedProcess?.name}
+              </div>
+            </div>
+          </div>
+        </PanelSectionRow>
+        <PanelSectionRow>
+          <div className={FieldWithSeparator}>
+            <div className={gamepadDialogClasses.FieldLabelRow}>
+              <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "25%", "wordBreak": "break-all"}}>
+                PID
+              </div>
+              <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "75%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
+                {selectedProcess?.pid}
+              </div>
+            </div>
+          </div>
+        </PanelSectionRow>
+        <PanelSectionRow>
+          <ButtonItem layout="below" onClick={() => setSelectedProcess(undefined)}>
+            Choose Another Process
+          </ButtonItem>
+        </PanelSectionRow>
+        {/* If there are more than 0 matches */}
+        <PanelSectionRow>
+          <ButtonItem layout="below" onClick={() => reset()}>
+            Reset Search
+          </ButtonItem>
+        </PanelSectionRow>
+      </PanelSection>
+    </React.Fragment>
+  );
+
+  const Search = (
+    <React.Fragment>
+      <PanelSection title="Search">
+        <NumpadInput label="Search Value" value={searchValue} onChange={(e) => setSearchValue(e)} />
+
+        <PanelSectionRow>
+          <DropdownItem
+            label="Search Type"
+            description="What type of search to make."
+            menuLabel="Search Type"
+            rgOptions={MatchTypes.map((o) => ({
+              data: o.value,
+              label: o.label
+            }))}
+            
+            selectedOption={
+              selectedMode
+            }
+            
+            onChange={(newVal: { data: number; label: string }) => {
+              setSelectedMode(newVal.data);
+            }}
+          />
+        </PanelSectionRow>
+
+        <PanelSectionRow>
+          {/* Show Button if not loading */}
+          {!loading && (
+            <ButtonItem layout="below" onClick={() => {search()}}>
+              Search
+            </ButtonItem>
+          )}
+          {/* Otherwise, show spinner */}
+          {loading && (
+            <SteamSpinner />
+          )}
+        </PanelSectionRow>
+      </PanelSection>
+    </React.Fragment>
+  )
+
+  const Stats = (
+    <React.Fragment>
+      <PanelSection title="Stats">
+        <PanelSectionRow>
+          <div className={FieldWithSeparator}>
+            <div className={gamepadDialogClasses.FieldLabelRow}>
+              <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "35%", "wordBreak": "break-all"}}>
+                Number of Matches
+              </div>
+              <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "65%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
+                {numberOfMatches}
+              </div>
+            </div>
+          </div>
+        </PanelSectionRow>
+      </PanelSection>
+    </React.Fragment>
+  )
+
+  const Results = (
+    <React.Fragment>
+      <PanelSection title="Results">
+        {/* For every result, show a row with the address, value and a button to set */}
+        {results.map((result) => (
+          <React.Fragment>
+            <PanelSectionRow>
+              <div className={FieldWithSeparator}>
+                <div className={gamepadDialogClasses.FieldLabelRow}>
+                  <div className={gamepadDialogClasses.FieldLabel} style={{"maxWidth": "50%", "wordBreak": "break-all"}}>
+                    {result.address}
+                  </div>
+                  <div className={gamepadDialogClasses.FieldChildren} style={{"maxWidth": "50%", "width": "100%", "wordBreak": "break-all", "textAlign": "end"}}>
+                    {result.value}
+                  </div>
+                </div>
+              </div>
+            </PanelSectionRow>
+            <PanelSectionRow>
+              <ButtonItem layout="below" onClick={() => {setValue(result.address)}}>
+                Change
+              </ButtonItem>
+            </PanelSectionRow>
+          </React.Fragment>
+        ))}
+      </PanelSection>
+    </React.Fragment>
+  )
+
+  const Change = (
+    <React.Fragment>
+      <PanelSection>
+        <NumpadInput label="Change Value" value={newValue} onChange={(e) => setNewValue(e)} />
+      </PanelSection>
+    </React.Fragment>
+  )
 
   return (
-    <PanelSection title="Panel Section">
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={(e) =>
-            showContextMenu(
-              <Menu label="Menu" cancelText="CAAAANCEL" onCancel={() => {}}>
-                <MenuItem onSelected={() => {}}>Item #1</MenuItem>
-                <MenuItem onSelected={() => {}}>Item #2</MenuItem>
-                <MenuItem onSelected={() => {}}>Item #3</MenuItem>
-              </Menu>,
-              e.currentTarget ?? window
-            )
+    <React.Fragment>
+      {/* If there is a selected process */}
+      {selectedProcess && ProcessInfo}
+      {selectedProcess && Search}
+      {selectedProcess && Stats}
+  
+      {/* If there are fewer than 10 results */}
+      {selectedProcess && numberOfMatches > 0 && numberOfMatches < 10 && Change}
+      {selectedProcess && numberOfMatches > 0 && numberOfMatches < 10 && Results}
+
+
+      {/* If there is no selected process */}
+      {!selectedProcess && ProcessSelection}
+
+      <style>
+        {`
+          .NumpadButton {
+            padding: 10px 24px;
+            background: #23262e;
+            color: #dcdedf;
+            border: 0;
+            border-radius: 2px;
+            font-size: 16px;
           }
-        >
-          Server says yolo
-        </ButtonItem>
-      </PanelSectionRow>
-
-      <PanelSectionRow>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <img src={logo} />
-        </div>
-      </PanelSectionRow>
-
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={() => {
-            Router.CloseSideMenus();
-            Router.Navigate("/decky-plugin-test");
-          }}
-        >
-          Router
-        </ButtonItem>
-      </PanelSectionRow>
-    </PanelSection>
+          .NumpadButton:hover {
+            background: #fff;
+            color: #23262e;
+            outline: none;
+          }
+          .NumpadButton:active {
+            background: #fff;
+            color: #23262e;
+            outline: none;
+          }
+        `}
+      </style>
+    </React.Fragment>
   );
 };
 
@@ -90,14 +411,16 @@ const DeckyPluginRouterTest: VFC = () => {
 };
 
 export default definePlugin((serverApi: ServerAPI) => {
+  api = serverApi;
+
   serverApi.routerHook.addRoute("/decky-plugin-test", DeckyPluginRouterTest, {
     exact: true,
   });
 
   return {
-    title: <div className={staticClasses.Title}>Example Plugin</div>,
+    title: <div className={staticClasses.Title}>Decky Memory Scanner</div>,
     content: <Content serverAPI={serverApi} />,
-    icon: <FaShip />,
+    icon: <FaMagic />,
     onDismount() {
       serverApi.routerHook.removeRoute("/decky-plugin-test");
     },

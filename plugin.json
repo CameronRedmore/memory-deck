@@ -1,10 +1,10 @@
 {
-  "name": "Example Plugin",
-  "author": "John Doe",
+  "name": "Memory Deck",
+  "author": "Camzie99 ",
   "flags": ["debug", "_root"],
   "publish": {
-    "tags": ["template", "root", "dnu"],
-    "description": "Decky example plugin.",
+    "tags": ["cheats", "root", "scanmem", "memory"],
+    "description": "Scanmem wrapper for Decky.",
     "image": "https://opengraph.githubassets.com/1/SteamDeckHomebrew/PluginLoader"
   }
 }
