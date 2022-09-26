@@ -100,3 +100,5 @@ This project is licensed under the GPL-3.0 License - see the [LICENSE](LICENSE) 
 This project uses `libscanmem` and includes source code for `scanmem` and `libscanmem`, licensed under the GPL-3.0 License and the LGPL-3.0 License respectively.
 
 A copy of the licenses for these projects can be found under the `backend/scanmem` folder. And can be found in the `bin` folder of the plugin once compiled.
+
+This project also uses a modified version of a `scanmem` Python bindings library. The source for this is located under `scanmem.py`. This library is also licensed under LGPL-3.0.
