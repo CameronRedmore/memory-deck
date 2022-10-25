@@ -374,6 +374,7 @@ export default definePlugin((serverApi: ServerAPI) => {
     title: <div className={staticClasses.Title}>Decky Memory Scanner</div>,
     content: <Content serverAPI={serverApi} />,
     icon: <FaMagic />,
+    alwaysRender: true,
     onDismount() {
       serverApi.routerHook.removeRoute("/decky-plugin-test");
     },
