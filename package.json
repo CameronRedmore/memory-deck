@@ -1,6 +1,6 @@
 {
   "name": "memory-deck",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A Decky plugin to find and edit memory values from the Quick Access Menu",
   "scripts": {
     "build": "shx rm -rf dist && rollup -c",
