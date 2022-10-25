@@ -14,12 +14,12 @@ import {
   SteamSpinner
 } from "decky-frontend-lib";
 
-import React, { VFC, useState, useEffect } from "react";
+import React, { VFC, useEffect, useState } from "react";
 
 import { FaMagic } from "react-icons/fa";
 
 import { NumpadInput } from "./components/NumpadInput";
-import { playSound } from "./util";
+import { playSound } from "./util/util";
 
 //Process type with Name and Process ID properties
 interface Process {
@@ -86,18 +86,15 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
 
   const [selectedMode, setSelectedMode] = useState<number>(1);
 
-  const [selectedProcess, setSelectedProcess] = useState<Process>();
+  const [selectedProcess, setSelectedProcess] = useState<Process | null>(null);
 
   const [numberOfMatches, setNumberOfMatches] = useState<number>(0);
-  const [scanProgress, setScanProgress] = useState<number>(0);
 
   const [loading, setLoading] = useState<boolean>(false);
 
   const [newValue, setNewValue] = useState<string>("0");
 
   const [results, setResults] = useState<any[]>([]);
-
-  const [step, setStep] = useState<number>(1);
 
   // When selectedProcess is updated, send the process ID to the server
   useEffect(() => {
@@ -108,6 +105,8 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
 
   const loadProcessList = async () => {
     const result = await api!.callPluginMethod("get_processes", {});
+
+    console.log(result);
 
     if (result.success && result.result) {
       setProcessList(result.result as Process[]);
@@ -232,7 +231,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
         </div>
       </PanelSectionRow>
       <PanelSectionRow>
-        <ButtonItem layout="below" onClick={() => setSelectedProcess(undefined)}>
+        <ButtonItem layout="below" onClick={() => setSelectedProcess(null)}>
           Choose Another Process
         </ButtonItem>
       </PanelSectionRow>

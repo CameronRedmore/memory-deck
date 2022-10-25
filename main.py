@@ -2,11 +2,10 @@ import os
 import sys
 import subprocess
 
-from scanmem import Scanmem, parse_uservalue
-
 # Little hack to allow importing of files after Decky has loaded the plugin.
 sys.path.append(os.path.dirname(__file__))
 
+from scanmem import Scanmem, parse_uservalue
 
 class Plugin:
     # Method to return list of process names and PIDs on the system.

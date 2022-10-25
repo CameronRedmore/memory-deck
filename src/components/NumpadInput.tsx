@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { PanelSectionRow, gamepadDialogClasses, joinClassNames, DialogButton, Focusable } from "decky-frontend-lib";
 
-import { playSound } from "../util";
+import { playSound } from "../util/util";
 
 const FieldWithSeparator = joinClassNames(gamepadDialogClasses.Field, gamepadDialogClasses.WithBottomSeparatorStandard);
 
