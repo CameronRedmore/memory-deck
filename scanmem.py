@@ -543,14 +543,16 @@ class Scanmem():
             variable_int = int.from_bytes(
                 bytearray(variable_bytes), byteorder='little')
 
-            matches.append({
-                "address": hex(first_byte_in_child.value),
-                "first_byte_in_child": first_byte_in_child.value,
-                "value": variable_int,
-                "match_info": match_info.value,
-                "number_of_bytes": number_of_bytes.value,
-                "variable_bytes": variable_bytes
-            })
+            
+            if first_byte_in_child.value is not None:
+                matches.append({
+                    "address": hex(first_byte_in_child.value),
+                    "first_byte_in_child": first_byte_in_child.value,
+                    "value": variable_int,
+                    "match_info": match_info.value,
+                    "number_of_bytes": number_of_bytes.value,
+                    "variable_bytes": variable_bytes
+                })
 
         return matches
 
