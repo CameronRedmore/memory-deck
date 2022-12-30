@@ -5,7 +5,8 @@ import subprocess
 # Little hack to allow importing of files after Decky has loaded the plugin.
 sys.path.append(os.path.dirname(__file__))
 
-from scanmem import Scanmem, parse_uservalue
+from scanmem import Scanmem, parse_uservalue, UserValue, MatchFlag
+from ctypes import *
 
 class Plugin:
     # Method to return list of process names and PIDs on the system.
@@ -23,8 +24,9 @@ class Plugin:
         ps.wait()
 
         # Blacklist some processes
-        blacklist = ["ps ", "systemd", "reaper ", "pressure-vessel", "proton ", "power-button-handler", "ibus", "xbindkeys", "COMMAND", "wineserver", "system32", "socat", "sd-pam", "gamemoded", "sdgyrodsu", "dbus-daemon", "kwalletd5",
-                     "gamescope-session", "gamescope", "PluginLoader", "pipewire", "Xwayland", "wireplumber", "ibus-daemon", "sshd", "mangoapp", "steamwebhelper", "steam ", "xdg-desktop-portal", "xdg-document-portal", "xdg-permission-store", "bash"]
+        blacklist = ["ps ", "systemd", "reaper ", "pressure-vessel", "proton ", "power-button-handler", "ibus", "xbindkeys", "COMMAND", "wineserver", "system32", "socat", "sd-pam", "gamemoded", 
+        "sdgyrodsu", "dbus-daemon", "kwalletd5", "gamescope-session", "gamescope", "PluginLoader", "pipewire", "Xwayland", "wireplumber", "ibus-daemon", "sshd", "mangoapp", "steamwebhelper", "steam ", 
+        "xdg-desktop-portal", "xdg-document-portal", "xdg-permission-store", "bash", "steamos-devkit-service", "dconf-service"]
 
         # Parse output
         for line in output.splitlines():
@@ -48,7 +50,6 @@ class Plugin:
         print("Hello World!")
 
         self.scanmem = Scanmem()
-
         self.scanmem.init()
         self.scanmem.set_backend()
 
@@ -61,9 +62,7 @@ class Plugin:
         return self.scanmem.get_scan_progress()
 
     async def get_match_list(self):
-        matches = self.scanmem.get_matches()
-
-        return matches
+        return self.scanmem.get_matches()
 
     async def get_attached_process(self):
         # If self.pid and self.process_name exist
@@ -95,15 +94,67 @@ class Plugin:
 
         pass
 
-    async def search_regions(self, match_type, value):
-        print("Searching for ", match_type, value)
+    async def search_regions(self, match_type, searchValue, searchValueType):
+        if searchValueType == "auto":
+            val = parse_uservalue(searchValue)
 
-        val = parse_uservalue(value)
+            if val is None:
+                print("Invalid value!")
+                return False
+        else:
+            val = UserValue()
 
-        if val is None:
-            print("Invalid value!")
-            return False
+            snum = None
+            valid_sint = False
+            unum = None
+            valid_uint = False
+            try:
+                snum = int(searchValue)
+                valid_sint = True
+            except Exception:
+                pass
+            try:
+                unum = int(searchValue, 0)
+                valid_uint = True
+            except Exception:
+                pass
+            if not valid_sint and not valid_uint:
+                print("Invalid value!")
+                return False
 
+            match searchValueType:
+                case "c_int8":
+                    val.flags |= MatchFlag.FLAG_S8B
+                    val.int8_value = int(searchValue)
+                case "c_uint8":
+                    val.flags |= MatchFlag.FLAG_U8B
+                    val.uint8_value = int(searchValue, 0)
+                case "c_int16":
+                    val.flags |= MatchFlag.FLAG_S16B
+                    val.int16_value = int(searchValue)
+                case "c_uint16":
+                    val.flags |= MatchFlag.FLAG_U16B
+                    val.uint16_value = int(searchValue, 0)
+                case "c_int32":
+                    val.flags |= MatchFlag.FLAG_S32B
+                    val.int32_value = int(searchValue)
+                case "c_uint32":
+                    val.flags |= MatchFlag.FLAG_U32B
+                    val.uint32_value = int(searchValue, 0)
+                case "c_int64":
+                    val.flags |= MatchFlag.FLAG_S64B
+                    val.int64_value = int(searchValue)
+                case "c_uint64":
+                    val.flags |= MatchFlag.FLAG_U64B
+                    val.uint64_value = int(searchValue, 0)
+                case "c_float":
+                    val.flags |= MatchFlag.FLAG_FLOAT
+                    val.float32_value = searchValue
+                    val.float64_value = searchValue
+                case _:
+                    print("Invalid value!")
+                    return False
+        
         # print(self.scanmem.globals.matches)
 
         print("Valid value!")
@@ -116,68 +167,88 @@ class Plugin:
             self.scanmem.check_matches(match_type, val)
 
         print("Finding matches")
-        matches = self.scanmem.get_num_matches()
-
-        return matches
+        return self.scanmem.get_num_matches()
 
     async def search(self, operator, value):
         return self.scanmem.exec_command(operator + " " + value)
 
     async def set_value(self, address, value):
-        # return self.scanmem.set_address(self.pid, address, value)
         return self.scanmem.exec_command("set " + address + " " + value)
 
-# async def main():
-#     # This is only executed when the plugin is run directly
-#     # Create an instance of the plugin
-#     plugin = Plugin()
+async def main():
+    # This is only executed when the plugin is run directly
+    print("Slimmed down version of memory-deck for cli testing purposes")
 
-#     await plugin._main()
+    # Create an instance of the plugin
+    plugin = Plugin()
+    await plugin._main()
+    pids = await plugin.get_processes()
 
-#     print(await plugin.get_processes())
+    for pid in pids: print(pid)
 
-#     # Read PID from stdin
-#     print("Enter PID: ")
-#     pid = int(input('> '))
+    # Read PID from stdin
+    print("Enter PID: ")
+    selected_pid = int(input('> '))
 
-#     await plugin.attach(pid, "Test")
+    await plugin.attach(selected_pid, "Test")
+    print("PID " + str(selected_pid) + " selected.")
 
-#     matches = -1;
+    def help():
+        print("Enter value to search for within PID, or enter one of the following commands: ")
+        print("[ help, exit, reset, list, setNewValue <newValue>, pid <newPID>]")
 
-#     # Until matches is exactly 1, request a new value
-#     while matches != 1:
-#         # Get the new value
-#         newValue = input("> ")
+    help()
 
-#         if newValue == "exit":
-#             return
+    matches = -1;
 
-#         if newValue == "reset":
-#             plugin.scanmem.reset()
-#             continue
+    # Until matches is exactly 1, request a new value
+    while True:
+        # Get the new value
+        newValue = input("Enter Search Value > ")
 
-#         if newValue == "list":
-#             plugin.scanmem.exec_command("list")
-#             continue
+        if newValue == "exit":
+            return
 
-#         # If newValue starts with 'pid ' then we need to attach to a new process
-#         if newValue.startswith("pid "):
-#             pid = int(newValue.split(" ")[1])
-#             await plugin.attach(pid)
-#             continue
+        if newValue == "reset":
+            plugin.scanmem.reset()
+            print("Scanmem has been reset.")
+            help()
+            continue
+
+        if newValue == "list":
+            plugin.scanmem.exec_command("list")
+            continue
+
+        if newValue == "help":
+            help()
+            continue
+
+        if newValue.startswith("setNewValue "):
+            newValue = str(newValue.split(" ")[1])
+            address = 0x228d6840
+            plugin.scanmem.exec_command("set " + address + " " + newValue)
+            print("New value set.")
+            continue
+
+        # If newValue starts with 'pid ' then we need to attach to a new process
+        if newValue.startswith("pid "):
+            selected_pid = int(newValue.split(" ")[1])
+            await plugin.attach(selected_pid)
+            help()
+            continue
+
+        # await plugin.search_regions(ScanMatchType.MATCH_EQUAL_TO, newValue)
+        plugin.scanmem.exec_command("= " + newValue)
+
+        matches = await plugin.get_num_matches()
+
+        if matches < 50:
+            matched_addresses = await plugin.get_match_list()
+            for matched_address in matched_addresses: print(matched_address)
+
+        print("Finished")
 
 
-#         # await plugin.search_regions(ScanMatchType.MATCH_EQUAL_TO, newValue)
-#         plugin.scanmem.exec_command("= " + newValue)
-
-
-#         matches = await plugin.get_num_matches()
-
-#         if matches < 50:
-#             print(await plugin.get_match_list())
-
-#         print("Finished")
-
-
-# if __name__ == "__main__":
-#     asyncio.run(main())
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
