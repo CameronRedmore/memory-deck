@@ -70,6 +70,20 @@ const MatchTypes = [
 
 ]
 
+const SearchValueTypes = [
+  { value: "auto"  , label: "auto"   },
+  { value: "c_int8"  , label: "int8"   },
+  { value: "c_uint8" , label: "uint8"  },
+  { value: "c_int16" , label: "int16"  },
+  { value: "c_uint16", label: "uint16" },
+  { value: "c_int32", label: "int32"   },
+  { value: "c_uint32", label: "uint32" },
+  { value: "c_float" , label: "float32"},
+  { value: "c_double", label: "float64"},
+  { value: "c_int64" , label: "int64"  },
+  { value: "c_uint64", label: "uint64" }
+]
+
 interface Result {
   first_byte_in_child: string;
   address: string;
@@ -83,6 +97,8 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
   const [processList, setProcessList] = useState<Process[]>([]);
 
   const [searchValue, setSearchValue] = useState<string>("0");
+
+  const [searchValueType, setSearchValueType] = useState<string>("auto");
 
   const [selectedMode, setSelectedMode] = useState<number>(1);
 
@@ -125,7 +141,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
 
   const search = async () => {
     setLoading(true)
-    const result = await api!.callPluginMethod("search_regions", { match_type: selectedMode, value: searchValue });
+    const result = await api!.callPluginMethod("search_regions", { match_type: selectedMode, searchValue: searchValue, searchValueType: searchValueType });
 
     if (result.success) {
       setNumberOfMatches(result.result as number);
@@ -152,6 +168,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
     const result = await api!.callPluginMethod("get_match_list", {});
 
     if (result.success) {
+      setNumberOfMatches(Object.keys(result.result).length);
       setResults(result.result as Result[]);
     }
 
@@ -160,7 +177,27 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
 
   const setValue = async (address: string) => {
     playSound("https://steamloopback.host/sounds/deck_ui_default_activation.wav");
+    setLoading(true)
     const result = await api!.callPluginMethod("set_value", { address: address, value: newValue });
+
+    if (result.success) {
+      // Find the index of the changed value in the results object, update it in the UI.
+      setResults([]);
+      var indexOfChangedValue = -1;
+
+      results.find(function(item, i){
+        if(item.address === String(address)){
+          indexOfChangedValue = i;
+        }
+      });
+
+      let updatedResults = results;
+      updatedResults[indexOfChangedValue]['value'] = parseInt(newValue);
+
+      setResults(updatedResults);
+    }
+
+    setLoading(false)
   }
 
   // Load the process list when the plugin is loaded
@@ -249,6 +286,24 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
       <NumpadInput label="Search Value" value={searchValue} onChange={(e) => setSearchValue(e)} />
 
       <PanelSectionRow>
+      <DropdownItem
+          label="Value Type"
+          description="What type of value to search."
+          menuLabel="Value Type"
+          rgOptions={SearchValueTypes.map((o) => ({
+            data: o.value,
+            label: o.label
+          }))}
+
+          selectedOption={
+            searchValueType
+          }
+
+          onChange={(newVal: { data: string; label: string }) => {
+            setSearchValueType(newVal.data);
+            reset();
+          }}
+        />
         <DropdownItem
           label="Search Type"
           description="What type of search to make."
