@@ -225,7 +225,7 @@ async def main():
 
         if newValue.startswith("setNewValue "):
             newValue = str(newValue.split(" ")[1])
-            address = 0x228d6840
+            address = "0x228d6840" #placeholder, isn't actually used. scanmem automatically uses the last search result addresses i guess.
             plugin.scanmem.exec_command("set " + address + " " + newValue)
             print("New value set.")
             continue
