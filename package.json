@@ -1,6 +1,6 @@
 {
   "name": "memory-deck",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A Decky plugin to find and edit memory values from the Quick Access Menu",
   "scripts": {
     "build": "shx rm -rf dist && rollup -c",
@@ -19,6 +19,7 @@
     "deck"
   ],
   "author": "Camzie99 <credmore99@gmail.com>",
+  "contributors": [ "HeyItsWaters <iwaters1023@gmail.com>" ],
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/CameronRedmore/memory-deck/issues"

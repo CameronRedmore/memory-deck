@@ -5,6 +5,6 @@
   "publish": {
     "tags": ["cheats", "scanmem", "memory"],
     "description": "A simplistic scanmem wrapper for Decky. Enabling scanning for and editing values in memory.",
-    "image": "https://github.com/CameronRedmore/memory-deck/blob/main/image/README/1664125159778.png"
+    "image": "https://raw.githubusercontent.com/HeyItsWaters/memory-deck/main/image/README/1664125159778.png"
   }
 }
