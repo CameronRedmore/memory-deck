@@ -1,6 +1,8 @@
 
 import os
 from ctypes import *
+import io
+from contextlib import redirect_stdout
 
 '''
     Python3 bindings for scanmem
@@ -512,6 +514,7 @@ class Scanmem():
         current_address += sizeof(bytes_allocated)
         max_needed_bytes = c_size_t.from_address(current_address)
         current_address += sizeof(max_needed_bytes)
+
         for i in range(0, num_matches):
             first_byte_in_child = c_void_p.from_address(current_address)
             current_address += sizeof(first_byte_in_child)
@@ -543,9 +546,10 @@ class Scanmem():
             variable_int = int.from_bytes(
                 bytearray(variable_bytes), byteorder='little')
 
-            
+            print("h2o - " + str(number_of_bytes))            
             if first_byte_in_child.value is not None:
                 matches.append({
+                    "match_index": i,
                     "address": hex(first_byte_in_child.value),
                     "first_byte_in_child": first_byte_in_child.value,
                     "value": variable_int,
