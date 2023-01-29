@@ -10,9 +10,7 @@ import {
   staticClasses,
   gamepadDialogClasses,
   joinClassNames,
-  SteamSpinner,
-  ProgressBar
-} from "decky-frontend-lib";
+  SteamSpinner} from "decky-frontend-lib";
 
 import React, { VFC, useEffect, useState } from "react";
 
@@ -179,11 +177,9 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
   const setValue = async (address: string, match_index: number) => {
     playSound("https://steamloopback.host/sounds/deck_ui_default_activation.wav");
     setLoading(true)
-    console.log('memory-deck: match_index: ' + match_index.toString())
     const result = await api!.callPluginMethod("set_value", { address: address, match_index: match_index, value: newValue });
 
     if (result.success) {
-      console.log(result)
       // Find the index of the changed value in the results object, update it in the UI. If "Change All", change all values.
       setResults([]);
       var indexOfChangedValue = -1;

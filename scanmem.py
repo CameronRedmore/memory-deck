@@ -1,8 +1,6 @@
 
 import os
 from ctypes import *
-import io
-from contextlib import redirect_stdout
 
 '''
     Python3 bindings for scanmem
@@ -546,7 +544,6 @@ class Scanmem():
             variable_int = int.from_bytes(
                 bytearray(variable_bytes), byteorder='little')
 
-            print("h2o - " + str(number_of_bytes))            
             if first_byte_in_child.value is not None:
                 matches.append({
                     "match_index": i,
