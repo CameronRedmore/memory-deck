@@ -1,7 +1,6 @@
 import os
 import sys
 import subprocess
-import asyncio
 
 # Little hack to allow importing of files after Decky has loaded the plugin.
 sys.path.append(os.path.dirname(__file__))
@@ -12,7 +11,7 @@ from ctypes import *
 
 # initiate list that will store values we want to freeze
 freeze_subprocess_list = []
-debug = True
+debug = False
 
 class Plugin:
     # Method to return list of process names and PIDs on the system.
@@ -106,10 +105,8 @@ class Plugin:
         pass
 
     async def search_regions(self, match_type, searchValue, searchValueType):
-        global val_type
         if searchValueType == "auto":
             val = parse_uservalue(searchValue)
-            val_type = val.flags
 
             if val is None:
                 print("Invalid value!")
@@ -139,40 +136,31 @@ class Plugin:
                 case "c_int8":
                     val.flags |= MatchFlag.FLAG_S8B
                     val.int8_value = int(searchValue)
-                    val_type = "i8"
                 case "c_uint8":
                     val.flags |= MatchFlag.FLAG_U8B
                     val.uint8_value = int(searchValue, 0)
-                    val_type = "i8"
                 case "c_int16":
                     val.flags |= MatchFlag.FLAG_S16B
                     val.int16_value = int(searchValue)
-                    val_type = "i16"
                 case "c_uint16":
                     val.flags |= MatchFlag.FLAG_U16B
                     val.uint16_value = int(searchValue, 0)
-                    val_type = "i16"
                 case "c_int32":
                     val.flags |= MatchFlag.FLAG_S32B
                     val.int32_value = int(searchValue)
-                    val_type = "i32"
                 case "c_uint32":
                     val.flags |= MatchFlag.FLAG_U32B
                     val.uint32_value = int(searchValue, 0)
-                    val_type = "i32"
                 case "c_int64":
                     val.flags |= MatchFlag.FLAG_S64B
                     val.int64_value = int(searchValue)
-                    val_type = "i64"
                 case "c_uint64":
                     val.flags |= MatchFlag.FLAG_U64B
                     val.uint64_value = int(searchValue, 0)
-                    val_type = "i64"
                 case "c_float":
                     val.flags |= MatchFlag.FLAG_FLOAT
                     val.float32_value = searchValue
                     val.float64_value = searchValue
-                    val_type = "f32"
                 case _:
                     print("Invalid value!")
                     return False
