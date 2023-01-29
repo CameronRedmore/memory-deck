@@ -8,11 +8,9 @@ import {
   ServerAPI,
   DropdownItem,
   staticClasses,
-
   gamepadDialogClasses,
   joinClassNames,
-  SteamSpinner
-} from "decky-frontend-lib";
+  SteamSpinner} from "decky-frontend-lib";
 
 import React, { VFC, useEffect, useState } from "react";
 
@@ -85,6 +83,7 @@ const SearchValueTypes = [
 ]
 
 interface Result {
+  match_index: number;
   first_byte_in_child: string;
   address: string;
   value: number;
@@ -165,7 +164,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
 
   const loadResults = async () => {
     setLoading(true)
-    const result = await api!.callPluginMethod("get_match_list", {});
+    const result = await api!.callPluginMethod("get_matches", {});
 
     if (result.success) {
       setNumberOfMatches(Object.keys(result.result).length);
@@ -175,26 +174,35 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
     setLoading(false)
   }
 
-  const setValue = async (address: string) => {
+  const setValue = async (address: string, match_index: number) => {
     playSound("https://steamloopback.host/sounds/deck_ui_default_activation.wav");
     setLoading(true)
-    const result = await api!.callPluginMethod("set_value", { address: address, value: newValue });
+    const result = await api!.callPluginMethod("set_value", { address: address, match_index: match_index, value: newValue });
 
     if (result.success) {
-      // Find the index of the changed value in the results object, update it in the UI.
+      // Find the index of the changed value in the results object, update it in the UI. If "Change All", change all values.
       setResults([]);
       var indexOfChangedValue = -1;
+      let updatedResults = results;
 
       results.find(function(item, i){
-        if(item.address === String(address)){
-          indexOfChangedValue = i;
+        if(match_index !== 999) {
+          if(item.address === String(address)){
+            indexOfChangedValue = i;
+          }
+        } else {
+          updatedResults[i]['value'] = parseInt(newValue);
         }
       });
 
-      let updatedResults = results;
-      updatedResults[indexOfChangedValue]['value'] = parseInt(newValue);
+      if(match_index !== 999) {
+        updatedResults[indexOfChangedValue]['value'] = parseInt(newValue);
+      }
 
       setResults(updatedResults);
+    } else {
+      console.log('memory-deck: failed to call set_value')
+      console.log(result)
     }
 
     setLoading(false)
@@ -358,6 +366,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
   const Results = (
     <PanelSection title="Results">
       {/* For every result, show a row with the address, value and a button to set */}
+      {/* Example result: {'address': '0x785d1718', 'first_byte_in_child': 2019366680, 'value': 33333333, 'match_info': 0, 'number_of_bytes': 8, 'variable_bytes': [85, 160, 252, 1, 0, 0, 0, 0]} */}
       {results.map((result) => (
         <React.Fragment>
           <PanelSectionRow>
@@ -373,13 +382,20 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
             </div>
           </PanelSectionRow>
           <PanelSectionRow>
-            <ButtonItem layout="below" onClick={() => { setValue(result.address) }}>
+            <ButtonItem layout="below" onClick={() => { setValue(result.address, result.match_index) }}>
               Change
             </ButtonItem>
           </PanelSectionRow>
         </React.Fragment>
       ))}
+      <br></br><br></br>
+      {/* Change All button, send bogus address & index */}
+      {/* I really don't like that this button looks like the regular Change buttons, but idk how to make it better */}
+      <ButtonItem layout="below" onClick={() => { setValue("0x00000", 999) }}> 
+        Change All
+      </ButtonItem>
     </PanelSection>
+    
   )
 
   const Change = (

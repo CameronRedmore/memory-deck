@@ -6,7 +6,12 @@ import subprocess
 sys.path.append(os.path.dirname(__file__))
 
 from scanmem import Scanmem, parse_uservalue, UserValue, MatchFlag
+from threading import Thread
 from ctypes import *
+
+# initiate list that will store values we want to freeze
+freeze_subprocess_list = []
+debug = False
 
 class Plugin:
     # Method to return list of process names and PIDs on the system.
@@ -26,7 +31,7 @@ class Plugin:
         # Blacklist some processes
         blacklist = ["ps ", "systemd", "reaper ", "pressure-vessel", "proton ", "power-button-handler", "ibus", "xbindkeys", "COMMAND", "wineserver", "system32", "socat", "sd-pam", "gamemoded", 
         "sdgyrodsu", "dbus-daemon", "kwalletd5", "gamescope-session", "gamescope", "PluginLoader", "pipewire", "Xwayland", "wireplumber", "ibus-daemon", "sshd", "mangoapp", "steamwebhelper", "steam ", 
-        "xdg-desktop-portal", "xdg-document-portal", "xdg-permission-store", "bash", "steamos-devkit-service", "dconf-service"]
+        "xdg-desktop-portal", "xdg-document-portal", "xdg-permission-store", "bash", "steamos-devkit-service", "dconf-service", "CrashHandler"]
 
         # Parse output
         for line in output.splitlines():
@@ -48,6 +53,8 @@ class Plugin:
     # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
     async def _main(self):
         print("Hello World!")
+        global log_file
+        if (debug): log_file = open("/tmp/memory-deck.log", "a")
 
         self.scanmem = Scanmem()
         self.scanmem.init()
@@ -62,6 +69,9 @@ class Plugin:
         return self.scanmem.get_scan_progress()
 
     async def get_match_list(self):
+        return self.scanmem.exec_command("list")
+    
+    async def get_matches(self):
         return self.scanmem.get_matches()
 
     async def get_attached_process(self):
@@ -77,11 +87,11 @@ class Plugin:
 
     async def reset_scanmem(self):
         self.scanmem.reset()
+        # freeze_subprocess_list = []
 
         pass
 
     # Method to attach to a process
-
     async def attach(self, pid, name):
         print("Attaching to process ", pid)
         self.pid = int(pid)
@@ -172,8 +182,20 @@ class Plugin:
     async def search(self, operator, value):
         return self.scanmem.exec_command(operator + " " + value)
 
-    async def set_value(self, address, value):
-        return self.scanmem.exec_command("set " + address + " " + value)
+    async def set_value(self, address, match_index, value):
+        if match_index != 999:
+            if (debug): log_file.write('setting memory address ' + str(address) + ' with index of ' + str(match_index) + ' to ' + str(value))
+            if (debug): log_file.flush()
+            return self.scanmem.exec_command("set " + str(match_index) + "=" + value)
+        else:
+            if (debug): log_file.write('setting all matched memory addresses to ' + str(value) + ' because index ' + str(match_index) + ' was received.')
+            if (debug): log_file.flush()
+            return self.scanmem.exec_command("set " + value)
+        
+
+    async def freeze(self, address, value):
+        #TODO add ability to freeze new values. Probably create subprocess that continuously sets value. Or use the "set" scanmem command with args to keep setting it.
+        pass
 
 async def main():
     # This is only executed when the plugin is run directly
@@ -194,8 +216,32 @@ async def main():
     print("PID " + str(selected_pid) + " selected.")
 
     def help():
+        print("########################################################################################################")
         print("Enter value to search for within PID, or enter one of the following commands: ")
-        print("[ help, exit, reset, list, setNewValue <newValue>, pid <newPID>]")
+        print("help")
+        print("     prints this help menu")
+        print("")
+        print("setNewValue <newValue> [OPTIONAL* <memoryAddress>]")
+        print("     Set a new value for a given memory address. If no memory address is provided, update all matches")
+        print("")
+        print("pid <newPID>)")
+        print("     attach to new PID")
+        print("")
+        print("list")
+        print("     prints current matches")
+        print("")
+        print("set <arguments>")
+        print("     set specific index to value")
+        print("     example: write new value to match_index 1:")
+        print("         set 1=999999")
+        print("")        
+        print("exit")
+        print("     exits memory-deck cli")
+        print("")
+        print("reset")
+        print("     resets current memory-deck cli progress")
+        print("########################################################################################################")
+        print("")
 
     help()
 
@@ -204,7 +250,7 @@ async def main():
     # Until matches is exactly 1, request a new value
     while True:
         # Get the new value
-        newValue = input("Enter Search Value > ")
+        newValue = input("> ")
 
         if newValue == "exit":
             return
@@ -216,7 +262,14 @@ async def main():
             continue
 
         if newValue == "list":
-            plugin.scanmem.exec_command("list")
+            # plugin.scanmem.exec_command("list")
+            print(await plugin.get_match_list())
+            continue
+
+        if newValue.startswith("dump "):
+            addressToDump = str(newValue.split(" ")[1])
+            lengthToDump = str(newValue.split(" ")[2])
+            plugin.scanmem.exec_command("dump " + addressToDump + " " + lengthToDump)
             continue
 
         if newValue == "help":
@@ -224,9 +277,14 @@ async def main():
             continue
 
         if newValue.startswith("setNewValue "):
-            newValue = str(newValue.split(" ")[1])
-            address = "0x228d6840" #placeholder, isn't actually used. scanmem automatically uses the last search result addresses i guess.
-            plugin.scanmem.exec_command("set " + address + " " + newValue)
+            newValueToSet = str(newValue.split(" ")[1])
+            if len(newValue.split(' ')) < 3:
+                print("updating all matches with new value")
+                plugin.scanmem.exec_command("set " + newValueToSet)
+            else:
+                print('updating specified memory address with new value')
+                mem_address = str(newValue.split(" ")[2])
+                plugin.scanmem.exec_command("write i32 " + mem_address + " " + newValueToSet)
             print("New value set.")
             continue
 
@@ -236,6 +294,12 @@ async def main():
             await plugin.attach(selected_pid)
             help()
             continue
+        
+        if newValue.startswith("set "):
+            print("Executing scanmem command - " + str(newValue))
+            set_arguments = newValue.split("set ")[1]
+            plugin.scanmem.exec_command("set " + str(set_arguments))
+            continue
 
         # await plugin.search_regions(ScanMatchType.MATCH_EQUAL_TO, newValue)
         plugin.scanmem.exec_command("= " + newValue)
@@ -243,7 +307,7 @@ async def main():
         matches = await plugin.get_num_matches()
 
         if matches < 50:
-            matched_addresses = await plugin.get_match_list()
+            matched_addresses = await plugin.get_matches()
             for matched_address in matched_addresses: print(matched_address)
 
         print("Finished")
