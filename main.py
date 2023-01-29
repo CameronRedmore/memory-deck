@@ -12,6 +12,7 @@ from ctypes import *
 
 # initiate list that will store values we want to freeze
 freeze_subprocess_list = []
+debug = True
 
 class Plugin:
     # Method to return list of process names and PIDs on the system.
@@ -54,7 +55,7 @@ class Plugin:
     async def _main(self):
         print("Hello World!")
         global log_file
-        log_file = open("/tmp/memory-deck.log", "a")
+        if (debug): log_file = open("/tmp/memory-deck.log", "a")
 
         self.scanmem = Scanmem()
         self.scanmem.init()
@@ -87,7 +88,6 @@ class Plugin:
 
     async def reset_scanmem(self):
         self.scanmem.reset()
-        log_file.close()
         # freeze_subprocess_list = []
 
         pass
@@ -195,10 +195,18 @@ class Plugin:
         return self.scanmem.exec_command(operator + " " + value)
 
     async def set_value(self, address, match_index, value):
-        return self.scanmem.exec_command("set " + str(match_index) + "=" + value)
+        if match_index != 999:
+            if (debug): log_file.write('setting memory address ' + str(address) + ' with index of ' + str(match_index) + ' to ' + str(value))
+            if (debug): log_file.flush()
+            return self.scanmem.exec_command("set " + str(match_index) + "=" + value)
+        else:
+            if (debug): log_file.write('setting all matched memory addresses to ' + str(value) + ' because index ' + str(match_index) + ' was received.')
+            if (debug): log_file.flush()
+            return self.scanmem.exec_command("set " + value)
+        
 
     async def freeze(self, address, value):
-        
+        #TODO add ability to freeze new values. Probably create subprocess that continuously sets value. Or use the "set" scanmem command with args to keep setting it.
         pass
 
 async def main():
