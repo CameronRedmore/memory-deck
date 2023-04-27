@@ -5,7 +5,7 @@ import subprocess
 # Little hack to allow importing of files after Decky has loaded the plugin.
 sys.path.append(os.path.dirname(__file__))
 
-from scanmem import Scanmem, parse_uservalue, UserValue, MatchFlag
+from scanmem import Scanmem, parse_uservalue, UserValue, MatchFlag, ScanMatchType, ScanDataType
 from threading import Thread
 from ctypes import *
 
@@ -14,6 +14,8 @@ freeze_subprocess_list = []
 debug = False
 
 class Plugin:
+    search_type = "auto"
+
     # Method to return list of process names and PIDs on the system.
     async def get_processes(self):
         print("Getting processes")
@@ -158,16 +160,23 @@ class Plugin:
                     val.flags |= MatchFlag.FLAG_U64B
                     val.uint64_value = int(searchValue, 0)
                 case "c_float":
-                    val.flags |= MatchFlag.FLAG_FLOAT
-                    val.float32_value = searchValue
-                    val.float64_value = searchValue
+                    val.flags |= MatchFlag.FLAG_F32B
+                    val.float32_value = float(searchValue)
+                case "c_double":
+                    val.flags |= MatchFlag.FLAG_F64B
+                    val.float64_value = float(searchValue)
                 case _:
                     print("Invalid value!")
                     return False
+                
+        if val.flags & MatchFlag.FLAG_F32B or val.flags & MatchFlag.FLAG_F64B:
+            self.scanmem.globals.options.scan_data_type = ScanDataType.ANYFLOAT
+        else:
+            self.scanmem.globals.options.scan_data_type = ScanDataType.ANYINTEGER
         
         # print(self.scanmem.globals.matches)
 
-        print("Valid value!")
+        print("Valid value: " + searchValue + ", type: " + searchValueType)
 
         if self.scanmem.globals.matches is None:
             print("No matches, scanning all regions")
@@ -220,6 +229,9 @@ async def main():
         print("Enter value to search for within PID, or enter one of the following commands: ")
         print("help")
         print("     prints this help menu")
+        print("")
+        print("type <ctype>")
+        print("     example: type c_double")
         print("")
         print("setNewValue <newValue> [OPTIONAL* <memoryAddress>]")
         print("     Set a new value for a given memory address. If no memory address is provided, update all matches")
@@ -301,11 +313,17 @@ async def main():
             plugin.scanmem.exec_command("set " + str(set_arguments))
             continue
 
-        # await plugin.search_regions(ScanMatchType.MATCH_EQUAL_TO, newValue)
-        plugin.scanmem.exec_command("= " + newValue)
+        if newValue.startswith("type "):
+            plugin.search_type = newValue.split(" ")[1]
+            print("Search type set to: "+ plugin.search_type)
+            continue
 
-        matches = await plugin.get_num_matches()
-
+        if plugin.search_type != "auto":
+            matches = await plugin.search_regions(ScanMatchType.MATCH_EQUAL_TO, newValue, plugin.search_type)
+        else:
+            plugin.scanmem.exec_command("= " + newValue)
+            matches = await plugin.get_num_matches()
+            
         if matches < 50:
             matched_addresses = await plugin.get_matches()
             for matched_address in matched_addresses: print(matched_address)
