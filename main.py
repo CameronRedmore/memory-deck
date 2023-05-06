@@ -1,7 +1,7 @@
 import os
 import sys
 import subprocess
-
+import logging
 # Little hack to allow importing of files after Decky has loaded the plugin.
 sys.path.append(os.path.dirname(__file__))
 
@@ -11,14 +11,13 @@ from ctypes import *
 
 # initiate list that will store values we want to freeze
 freeze_subprocess_list = []
-debug = False
 
 class Plugin:
     search_type = "auto"
 
     # Method to return list of process names and PIDs on the system.
     async def get_processes(self):
-        print("Getting processes")
+        logging.info("Getting processes")
 
         process_list = []
 
@@ -54,9 +53,11 @@ class Plugin:
 
     # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
     async def _main(self):
-        print("Hello World!")
-        global log_file
-        if (debug): log_file = open("/tmp/memory-deck.log", "a")
+        logging.basicConfig(filename='/tmp/memory-deck.log', 
+                            level= logging.DEBUG,
+                            filemode='a', 
+                            format='%(name)s - %(levelname)s - %(message)s')
+        logging.info('Start New session')
 
         self.scanmem = Scanmem()
         self.scanmem.init()
@@ -95,7 +96,7 @@ class Plugin:
 
     # Method to attach to a process
     async def attach(self, pid, name):
-        print("Attaching to process ", pid)
+        logging.info("Attaching to process ", pid)
         self.pid = int(pid)
         self.process_name = name
 
@@ -111,7 +112,7 @@ class Plugin:
             val = parse_uservalue(searchValue)
 
             if val is None:
-                print("Invalid value!")
+                logging.error("Unable to parse value [auto]: " + searchValue)
                 return False
         else:
             val = UserValue()
@@ -131,7 +132,7 @@ class Plugin:
             except Exception:
                 pass
             if not valid_sint and not valid_uint:
-                print("Invalid value!")
+                logging.error("Unable to parse value [Int]: " + searchValue)
                 return False
 
             match searchValueType:
@@ -166,7 +167,7 @@ class Plugin:
                     val.flags |= MatchFlag.FLAG_F64B
                     val.float64_value = float(searchValue)
                 case _:
-                    print("Invalid value!")
+                    logging.error("Unable to apply flags to value: " + searchValue)
                     return False
                 
         if val.flags & MatchFlag.FLAG_F32B or val.flags & MatchFlag.FLAG_F64B:
@@ -174,15 +175,15 @@ class Plugin:
         else:
             self.scanmem.globals.options.scan_data_type = ScanDataType.ANYINTEGER
         
-        # print(self.scanmem.globals.matches)
+        
 
-        print("Valid value: " + searchValue + ", type: " + searchValueType)
+        logging.info("Valid value: " + searchValue + ", type: " + searchValueType)
 
         if self.scanmem.globals.matches is None:
-            print("No matches, scanning all regions")
+            logging.info("No matches, scanning all regions")
             self.scanmem.search_regions(match_type, val)
         else:
-            print("Matches found, scanning only those regions")
+            logging.info("Matches found, scanning only those regions")
             self.scanmem.check_matches(match_type, val)
 
         print("Finding matches")
@@ -193,12 +194,11 @@ class Plugin:
 
     async def set_value(self, address, match_index, value):
         if match_index != 999:
-            if (debug): log_file.write('setting memory address ' + str(address) + ' with index of ' + str(match_index) + ' to ' + str(value))
-            if (debug): log_file.flush()
+            logging.info('setting memory address ' + str(address) + ' with index of ' + str(match_index) + ' to ' + str(value))
             return self.scanmem.exec_command("set " + str(match_index) + "=" + value)
         else:
-            if (debug): log_file.write('setting all matched memory addresses to ' + str(value) + ' because index ' + str(match_index) + ' was received.')
-            if (debug): log_file.flush()
+            
+            logging.info('setting all matched memory addresses to ' + str(value) + ' because index ' + str(match_index) + ' was received.')
             return self.scanmem.exec_command("set " + value)
         
 
