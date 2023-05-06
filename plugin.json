@@ -1,7 +1,7 @@
 {
   "name": "Memory Deck",
   "author": "Camzie99 ",
-  "flags": ["debug"],
+  "flags": ["debug", "root"],
   "publish": {
     "tags": ["cheats", "scanmem", "memory"],
     "description": "A simplistic scanmem wrapper for Decky. Enabling scanning for and editing values in memory.",
