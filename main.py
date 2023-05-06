@@ -236,7 +236,7 @@ async def main():
         print("setNewValue <newValue> [OPTIONAL* <memoryAddress>]")
         print("     Set a new value for a given memory address. If no memory address is provided, update all matches")
         print("")
-        print("pid <newPID>)")
+        print("pid <newPID>")
         print("     attach to new PID")
         print("")
         print("list")
