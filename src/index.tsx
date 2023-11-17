@@ -209,8 +209,8 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
     if (typeof str !== "string") return "";
     const exeIndex = str.indexOf(".exe");
     if (-1 === exeIndex) return str;
-    let res = str.substring(0, exeIndex + 4); // If don't want to display '.exe', remove '+4'
-    return res.split("\\").slice(-2).join("/").split("/").slice(-2).join("/");
+    const res = str.substring(0, exeIndex + 4); // If don't want to display '.exe', remove '+4'
+    return res.split("/").slice(-2).join("/").split("\\").slice(-2).join("/");
   };
 
   const setValue = async (address: string, match_index: number) => {
