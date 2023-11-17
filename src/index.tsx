@@ -205,6 +205,14 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
     setLocked(0);
   };
 
+  const getSimpleName = (str: string | undefined) => {
+    if (typeof str !== "string") return "";
+    const exeIndex = str.indexOf(".exe");
+    if (-1 === exeIndex) return str;
+    let res = str.substring(0, exeIndex + 4); // If don't want to display '.exe', remove '+4'
+    return res.split("\\").slice(-2).join("/").split("/").slice(-2).join("/");
+  };
+
   const setValue = async (address: string, match_index: number) => {
     playSound(
       "https://steamloopback.host/sounds/deck_ui_default_activation.wav"
@@ -276,7 +284,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
               onClick={() => setSelectedProcess(process)}
               layout="below"
             >
-              {process?.name}
+              {getSimpleName(process?.name)}
             </ButtonItem>
           </PanelSectionRow>
         ))}
@@ -305,7 +313,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
                 textAlign: "end",
               }}
             >
-              {selectedProcess?.name}
+              {getSimpleName(selectedProcess?.name)}
             </div>
           </div>
         </div>
