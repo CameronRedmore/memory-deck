@@ -10,7 +10,8 @@ import {
   staticClasses,
   gamepadDialogClasses,
   joinClassNames,
-  SteamSpinner} from "decky-frontend-lib";
+  SteamSpinner,
+} from "decky-frontend-lib";
 
 import React, { VFC, useEffect, useState } from "react";
 
@@ -28,7 +29,10 @@ interface Process {
 //api variable as ServerAPI type defaulting to null
 let api: ServerAPI | null = null;
 
-const FieldWithSeparator = joinClassNames(gamepadDialogClasses.Field, gamepadDialogClasses.WithBottomSeparatorStandard);
+const FieldWithSeparator = joinClassNames(
+  gamepadDialogClasses.Field,
+  gamepadDialogClasses.WithBottomSeparatorStandard
+);
 
 // MATCH_ANY = 0                # for snapshot
 // # following: compare with a given value
@@ -63,24 +67,22 @@ const MatchTypes = [
   { value: 11, label: "Increased By" },
   { value: 12, label: "Decreased By" },
 
-
   { value: 0, label: "Any" }, //Not overly useful, so it's last
-
-]
+];
 
 const SearchValueTypes = [
-  { value: "auto"  , label: "auto"   },
-  { value: "c_int8"  , label: "int8"   },
-  { value: "c_uint8" , label: "uint8"  },
-  { value: "c_int16" , label: "int16"  },
+  { value: "auto", label: "auto" },
+  { value: "c_int8", label: "int8" },
+  { value: "c_uint8", label: "uint8" },
+  { value: "c_int16", label: "int16" },
   { value: "c_uint16", label: "uint16" },
-  { value: "c_int32", label: "int32"   },
+  { value: "c_int32", label: "int32" },
   { value: "c_uint32", label: "uint32" },
-  { value: "c_float" , label: "float32"},
-  { value: "c_double", label: "float64"},
-  { value: "c_int64" , label: "int64"  },
-  { value: "c_uint64", label: "uint64" }
-]
+  { value: "c_float", label: "float32" },
+  { value: "c_double", label: "float64" },
+  { value: "c_int64", label: "int64" },
+  { value: "c_uint64", label: "uint64" },
+];
 
 interface Result {
   match_index: number;
@@ -89,10 +91,10 @@ interface Result {
   value: number;
   match_info: number;
   number_of_bytes: number;
-  variabel_bytes: number[]
+  variabel_bytes: number[];
 }
 
-const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
+const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
   const [processList, setProcessList] = useState<Process[]>([]);
 
   const [searchValue, setSearchValue] = useState<string>("0");
@@ -107,6 +109,8 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
 
   const [loading, setLoading] = useState<boolean>(false);
 
+  const [locked, setLocked] = useState<number>(0);
+
   const [newValue, setNewValue] = useState<string>("0");
 
   const [results, setResults] = useState<any[]>([]);
@@ -114,7 +118,10 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
   // When selectedProcess is updated, send the process ID to the server
   useEffect(() => {
     if (selectedProcess) {
-      api?.callPluginMethod("attach", { pid: selectedProcess.pid, name: selectedProcess.name });
+      api?.callPluginMethod("attach", {
+        pid: selectedProcess.pid,
+        name: selectedProcess.name,
+      });
     }
   }, [selectedProcess]);
 
@@ -126,7 +133,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
     if (result.success && result.result) {
       setProcessList(result.result as Process[]);
     }
-  }
+  };
 
   const loadExistingProcess = async () => {
     const result = await api!.callPluginMethod("get_attached_process", {});
@@ -136,11 +143,17 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
         setSelectedProcess(result.result as Process);
       }
     }
-  }
+  };
 
   const search = async () => {
-    setLoading(true)
-    const result = await api!.callPluginMethod("search_regions", { match_type: selectedMode, searchValue: searchValue, searchValueType: searchValueType });
+    setLoading(true);
+    onCancelAutoChange();
+
+    const result: any = await api!.callPluginMethod("search_regions", {
+      match_type: selectedMode,
+      searchValue: searchValue,
+      searchValueType: searchValueType,
+    });
 
     if (result.success) {
       setNumberOfMatches(result.result as number);
@@ -150,20 +163,22 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
       }
     }
 
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   const reset = async () => {
+    onCancelAutoChange();
+
     const result = await api!.callPluginMethod("reset_scanmem", {});
 
     if (result.success) {
       setNumberOfMatches(0);
       setResults([]);
     }
-  }
+  };
 
   const loadResults = async () => {
-    setLoading(true)
+    setLoading(true);
     const result = await api!.callPluginMethod("get_matches", {});
 
     if (result.success) {
@@ -171,13 +186,43 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
       setResults(result.result as Result[]);
     }
 
-    setLoading(false)
-  }
+    setLoading(false);
+  };
+
+  const onAutoChange = async () => {
+    if (locked) onCancelAutoChange();
+    else {
+      setValue("0x00000", 999);
+      const timer: any = setInterval(() => {
+        setValue("0x00000", 999);
+      }, 5000);
+      setLocked(timer);
+    }
+  };
+
+  const onCancelAutoChange = () => {
+    clearInterval(locked);
+    setLocked(0);
+  };
+
+  const getSimpleName = (str: string | undefined) => {
+    if (typeof str !== "string") return "";
+    const exeIndex = str.indexOf(".exe");
+    if (-1 === exeIndex) return str;
+    const res = str.substring(0, exeIndex + 4); // If don't want to display '.exe', remove '+4'
+    return res.split("/").slice(-2).join("/").split("\\").slice(-2).join("/");
+  };
 
   const setValue = async (address: string, match_index: number) => {
-    playSound("https://steamloopback.host/sounds/deck_ui_default_activation.wav");
-    setLoading(true)
-    const result = await api!.callPluginMethod("set_value", { address: address, match_index: match_index, value: newValue });
+    playSound(
+      "https://steamloopback.host/sounds/deck_ui_default_activation.wav"
+    );
+    setLoading(true);
+    const result = await api!.callPluginMethod("set_value", {
+      address: address,
+      match_index: match_index,
+      value: newValue,
+    });
 
     if (result.success) {
       // Find the index of the changed value in the results object, update it in the UI. If "Change All", change all values.
@@ -185,28 +230,28 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
       var indexOfChangedValue = -1;
       let updatedResults = results;
 
-      results.find(function(item, i){
-        if(match_index !== 999) {
-          if(item.address === String(address)){
+      results.find(function (item, i) {
+        if (match_index !== 999) {
+          if (item.address === String(address)) {
             indexOfChangedValue = i;
           }
         } else {
-          updatedResults[i]['value'] = parseInt(newValue);
+          updatedResults[i]["value"] = parseInt(newValue);
         }
       });
 
-      if(match_index !== 999) {
-        updatedResults[indexOfChangedValue]['value'] = parseInt(newValue);
+      if (match_index !== 999) {
+        updatedResults[indexOfChangedValue]["value"] = parseInt(newValue);
       }
 
       setResults(updatedResults);
     } else {
-      console.log('memory-deck: failed to call set_value')
-      console.log(result)
+      console.log("memory-deck: failed to call set_value");
+      console.log(result);
     }
 
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   // Load the process list when the plugin is loaded
   useEffect(() => {
@@ -220,8 +265,8 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
         {/* Button that calls `loadProcessList` function */}
         <ButtonItem
           layout="below"
-          onClick={(e) => {
-            console.log("Clicked!");
+          onClick={(e: MouseEvent) => {
+            console.log(e.currentTarget, "Clicked!");
             loadProcessList();
           }}
         >
@@ -239,13 +284,12 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
               onClick={() => setSelectedProcess(process)}
               layout="below"
             >
-              {process?.name}
+              {getSimpleName(process?.name)}
             </ButtonItem>
           </PanelSectionRow>
         ))}
       </React.Fragment>
       {/* )} */}
-
     </PanelSection>
   );
 
@@ -254,11 +298,22 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
       <PanelSectionRow>
         <div className={FieldWithSeparator}>
           <div className={gamepadDialogClasses.FieldLabelRow}>
-            <div className={gamepadDialogClasses.FieldLabel} style={{ "maxWidth": "25%", "wordBreak": "break-all" }}>
+            <div
+              className={gamepadDialogClasses.FieldLabel}
+              style={{ maxWidth: "25%", wordBreak: "break-all" }}
+            >
               Name
             </div>
-            <div className={gamepadDialogClasses.FieldChildren} style={{ "maxWidth": "75%", "width": "100%", "wordBreak": "break-all", "textAlign": "end" }}>
-              {selectedProcess?.name}
+            <div
+              className={gamepadDialogClasses.FieldChildren}
+              style={{
+                maxWidth: "75%",
+                width: "100%",
+                wordBreak: "break-all",
+                textAlign: "end",
+              }}
+            >
+              {getSimpleName(selectedProcess?.name)}
             </div>
           </div>
         </div>
@@ -266,10 +321,21 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
       <PanelSectionRow>
         <div className={FieldWithSeparator}>
           <div className={gamepadDialogClasses.FieldLabelRow}>
-            <div className={gamepadDialogClasses.FieldLabel} style={{ "maxWidth": "25%", "wordBreak": "break-all" }}>
+            <div
+              className={gamepadDialogClasses.FieldLabel}
+              style={{ maxWidth: "25%", wordBreak: "break-all" }}
+            >
               PID
             </div>
-            <div className={gamepadDialogClasses.FieldChildren} style={{ "maxWidth": "75%", "width": "100%", "wordBreak": "break-all", "textAlign": "end" }}>
+            <div
+              className={gamepadDialogClasses.FieldChildren}
+              style={{
+                maxWidth: "75%",
+                width: "100%",
+                wordBreak: "break-all",
+                textAlign: "end",
+              }}
+            >
               {selectedProcess?.pid}
             </div>
           </div>
@@ -291,22 +357,22 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
 
   const Search = (
     <PanelSection title="Search">
-      <NumpadInput label="Search Value" value={searchValue} onChange={(e) => setSearchValue(e)} />
+      <NumpadInput
+        label="Search Value"
+        value={searchValue}
+        onChange={(e) => setSearchValue(e)}
+      />
 
       <PanelSectionRow>
-      <DropdownItem
+        <DropdownItem
           label="Value Type"
           description="What type of value to search."
           menuLabel="Value Type"
           rgOptions={SearchValueTypes.map((o) => ({
             data: o.value,
-            label: o.label
+            label: o.label,
           }))}
-
-          selectedOption={
-            searchValueType
-          }
-
+          selectedOption={searchValueType}
           onChange={(newVal: { data: string; label: string }) => {
             setSearchValueType(newVal.data);
             reset();
@@ -318,13 +384,9 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
           menuLabel="Search Type"
           rgOptions={MatchTypes.map((o) => ({
             data: o.value,
-            label: o.label
+            label: o.label,
           }))}
-
-          selectedOption={
-            selectedMode
-          }
-
+          selectedOption={selectedMode}
           onChange={(newVal: { data: number; label: string }) => {
             setSelectedMode(newVal.data);
           }}
@@ -334,34 +396,48 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
       <PanelSectionRow>
         {/* Show Button if not loading */}
         {!loading && (
-          <ButtonItem layout="below" onClick={() => { search() }}>
+          <ButtonItem
+            layout="below"
+            onClick={() => {
+              search();
+            }}
+          >
             Search
           </ButtonItem>
         )}
         {/* Otherwise, show spinner */}
-        {loading && (
-          <SteamSpinner />
-        )}
+        {loading && <SteamSpinner />}
       </PanelSectionRow>
     </PanelSection>
-  )
+  );
 
   const Stats = (
     <PanelSection title="Stats">
       <PanelSectionRow>
         <div className={FieldWithSeparator}>
           <div className={gamepadDialogClasses.FieldLabelRow}>
-            <div className={gamepadDialogClasses.FieldLabel} style={{ "maxWidth": "35%", "wordBreak": "break-all" }}>
+            <div
+              className={gamepadDialogClasses.FieldLabel}
+              style={{ maxWidth: "35%", wordBreak: "break-all" }}
+            >
               Number of Matches
             </div>
-            <div className={gamepadDialogClasses.FieldChildren} style={{ "maxWidth": "65%", "width": "100%", "wordBreak": "break-all", "textAlign": "end" }}>
+            <div
+              className={gamepadDialogClasses.FieldChildren}
+              style={{
+                maxWidth: "65%",
+                width: "100%",
+                wordBreak: "break-all",
+                textAlign: "end",
+              }}
+            >
               {numberOfMatches}
             </div>
           </div>
         </div>
       </PanelSectionRow>
     </PanelSection>
-  )
+  );
 
   const Results = (
     <PanelSection title="Results">
@@ -372,37 +448,66 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
           <PanelSectionRow>
             <div className={FieldWithSeparator}>
               <div className={gamepadDialogClasses.FieldLabelRow}>
-                <div className={gamepadDialogClasses.FieldLabel} style={{ "maxWidth": "50%", "wordBreak": "break-all" }}>
+                <div
+                  className={gamepadDialogClasses.FieldLabel}
+                  style={{ maxWidth: "50%", wordBreak: "break-all" }}
+                >
                   {result.address}
                 </div>
-                <div className={gamepadDialogClasses.FieldChildren} style={{ "maxWidth": "50%", "width": "100%", "wordBreak": "break-all", "textAlign": "end" }}>
+                <div
+                  className={gamepadDialogClasses.FieldChildren}
+                  style={{
+                    maxWidth: "50%",
+                    width: "100%",
+                    wordBreak: "break-all",
+                    textAlign: "end",
+                  }}
+                >
                   {result.value}
                 </div>
               </div>
             </div>
           </PanelSectionRow>
           <PanelSectionRow>
-            <ButtonItem layout="below" onClick={() => { setValue(result.address, result.match_index) }}>
+            <ButtonItem
+              layout="below"
+              onClick={() => {
+                setValue(result.address, result.match_index);
+              }}
+            >
               Change
             </ButtonItem>
           </PanelSectionRow>
         </React.Fragment>
       ))}
-      <br></br><br></br>
+      <br></br>
       {/* Change All button, send bogus address & index */}
       {/* I really don't like that this button looks like the regular Change buttons, but idk how to make it better */}
-      <ButtonItem layout="below" onClick={() => { setValue("0x00000", 999) }}> 
+      <ButtonItem
+        layout="below"
+        onClick={() => {
+          setValue("0x00000", 999);
+        }}
+      >
         Change All
       </ButtonItem>
+      <br></br>
+      {/* Lock Change like Change All button, it enabled will make a call every 5 seconds */}
+      <ButtonItem layout="below" onClick={onAutoChange}>
+        Locked Change: {locked ? "ON" : "OFF"}
+      </ButtonItem>
     </PanelSection>
-    
-  )
+  );
 
   const Change = (
     <PanelSection>
-      <NumpadInput label="Change Value" value={newValue} onChange={(e) => setNewValue(e)} />
+      <NumpadInput
+        label="Change Value"
+        value={newValue}
+        onChange={(e) => setNewValue(e)}
+      />
     </PanelSection>
-  )
+  );
 
   return (
     <React.Fragment>
@@ -413,11 +518,20 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
 
       {/* If there are fewer than 10 results */}
       {selectedProcess && numberOfMatches > 0 && numberOfMatches < 10 && Change}
-      {selectedProcess && numberOfMatches > 0 && numberOfMatches < 10 && Results}
-
+      {selectedProcess &&
+        numberOfMatches > 0 &&
+        numberOfMatches < 10 &&
+        Results}
 
       {/* If there is no selected process */}
       {!selectedProcess && ProcessSelection}
+
+      {/* If this component is not present, the interface may not scroll to the bottom */}
+      <ButtonItem
+        layout="below"
+        onClick={() => {}}
+        style={{ visibility: "hidden", height: 1 }}
+      ></ButtonItem>
     </React.Fragment>
   );
 };
@@ -426,7 +540,7 @@ const DeckyPluginRouterTest: VFC = () => {
   return (
     <div style={{ marginTop: "50px", color: "white" }}>
       Hello World!
-      <DialogButton onClick={() => Router.NavigateToStore()}>
+      <DialogButton onClick={() => (Router as any).NavigateToStore()}>
         Go to Store
       </DialogButton>
     </div>
