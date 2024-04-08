@@ -1,6 +1,9 @@
 {
   "name": "Memory Deck",
   "author": "Camzie99 ",
+  "contributors": [
+    "HeyItsWaters <iwaters1023@gmail.com>"
+  ],
   "flags": ["debug", "root"],
   "publish": {
     "tags": ["cheats", "scanmem", "memory"],
