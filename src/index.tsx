@@ -106,6 +106,8 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
 
   const [loading, setLoading] = useState<boolean>(false);
 
+  const [locked, setLocked] = useState<number>(0);
+
   const [newValue, setNewValue] = useState<string>("0");
 
   const [results, setResults] = useState<any[]>([]);
@@ -139,6 +141,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
 
   const search = async () => {
     setLoading(true);
+    onCancelAutoChange();
 
     const result: any = await api!.callPluginMethod("search_regions", {
       match_type: selectedMode,
@@ -158,6 +161,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
   }
 
   const reset = async () => {
+    onCancelAutoChange();
 
     const result = await api!.callPluginMethod("reset_scanmem", {});
 
@@ -177,6 +181,22 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
     }
 
     setLoading(false);
+  }
+
+  const onAutoChange = async () => {
+    if (locked) onCancelAutoChange();
+    else {
+      setValue("0x00000", 999);
+      const timer: any = setInterval(() => {
+        setValue("0x00000", 999);
+      }, 5000);
+      setLocked(timer);
+    }
+  }
+
+  const onCancelAutoChange = () => {
+    clearInterval(locked);
+    setLocked(0);
   }
 
   const getSimpleName = (str: string | undefined) => {
@@ -394,6 +414,11 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
       {/* I really don't like that this button looks like the regular Change buttons, but idk how to make it better */}
       <ButtonItem layout="below" onClick={() => { setValue("0x00000", 999) }}>
         Change All
+      </ButtonItem>
+      <br></br>
+      {/* Lock Change like Change All button, it enabled will make a call every 5 seconds */}
+      <ButtonItem layout="below" onClick={onAutoChange}>
+        Locked Change: {locked ? "ON" : "OFF"}
       </ButtonItem>
     </PanelSection>
   )
