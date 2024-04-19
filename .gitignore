@@ -45,3 +45,4 @@ yalc.lock
 
 backend/out
 bin
+cli/
