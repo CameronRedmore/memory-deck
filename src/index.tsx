@@ -186,9 +186,9 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
   const onAutoChange = async () => {
     if (locked) onCancelAutoChange();
     else {
-      setValue("0x00000", 999);
+      setValue("0x00000", 999, true);
       const timer: any = setInterval(() => {
-        setValue("0x00000", 999);
+        setValue("0x00000", 999, true);
       }, 5000);
       setLocked(timer);
     }
@@ -207,8 +207,10 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
     return res.split("/").slice(-2).join("/").split("\\").slice(-2).join("/");
   }
 
-  const setValue = async (address: string, match_index: number) => {
-    playSound("https://steamloopback.host/sounds/deck_ui_default_activation.wav");
+  const setValue = async (address: string, match_index: number, silence: boolean = false) => {
+    if ( !silence ) {
+      playSound("https://steamloopback.host/sounds/deck_ui_default_activation.wav");
+    }
     setLoading(true);
     const result = await api!.callPluginMethod("set_value", { address: address, match_index: match_index, value: newValue });
 
